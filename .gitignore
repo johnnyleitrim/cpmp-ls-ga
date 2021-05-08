@@ -1,0 +1,8 @@
+/target/
+
+# Ignore IndelliJ IDE Files
+/.idea/
+/*.iml
+
+# Ignore the log files
+*.log
