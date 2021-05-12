@@ -10,12 +10,19 @@ import java.util.stream.Stream;
 import com.johnnyleitrim.cpmp.Problem;
 
 public class CVProblemProvider implements ProblemProvider {
-  private final String filePrefix;
-
   private static final String BASE_DIR = System.getProperty("user.home") + "/Datasets/MSc/CRPTestcases_Caserta/";
+  private final String filePrefix;
 
   public CVProblemProvider(String filePrefix) {
     this.filePrefix = filePrefix;
+  }
+
+  private static Problem read(Path file) {
+    try {
+      return CVProblemReader.fromLines(file.getFileName().toString(), Files.readAllLines(file));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -25,14 +32,6 @@ public class CVProblemProvider implements ProblemProvider {
           .filter(path -> path.getFileName().toString().startsWith(filePrefix))
           .map(CVProblemProvider::read)
           .collect(Collectors.toList());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static Problem read(Path file) {
-    try {
-      return CVProblemReader.fromLines(file.getFileName().toString(), Files.readAllLines(file));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

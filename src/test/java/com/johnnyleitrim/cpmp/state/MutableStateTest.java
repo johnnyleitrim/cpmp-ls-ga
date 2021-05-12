@@ -18,9 +18,7 @@ public class MutableStateTest {
 
     MutableState state = new MutableState(internalState, nStacks, nTiers);
 
-    Assertions.assertThrows(InvalidMoveException.class, () -> {
-      state.applyMove(0, 2);
-    });
+    Assertions.assertThrows(InvalidMoveException.class, () -> state.applyMove(0, 2));
   }
 
   @Test
@@ -34,9 +32,7 @@ public class MutableStateTest {
 
     MutableState state = new MutableState(internalState, nStacks, nTiers);
 
-    Assertions.assertThrows(InvalidMoveException.class, () -> {
-      state.applyMove(0, 2);
-    });
+    Assertions.assertThrows(InvalidMoveException.class, () -> state.applyMove(0, 2));
   }
 
   @Test

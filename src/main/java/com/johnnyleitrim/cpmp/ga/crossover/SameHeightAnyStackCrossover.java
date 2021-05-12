@@ -10,6 +10,19 @@ import com.johnnyleitrim.cpmp.utils.StackUtils;
 
 public class SameHeightAnyStackCrossover implements CrossoverAlgorithm {
 
+  private static void swapRemainingMoves(Chromosome parent, Chromosome child, int startMoveIndex, int nGenes, int[] mapping) {
+    for (int moveIndex = startMoveIndex; moveIndex < nGenes; moveIndex++) {
+      Gene parentMove = parent.getGene(moveIndex);
+      child.setGene(moveIndex, mapGene(parentMove, mapping));
+    }
+  }
+
+  private static Gene mapGene(Gene originalGene, int[] mapping) {
+    int srcStack = originalGene.getSourceStack();
+    int dstStack = originalGene.getDestinationStack();
+    return new Gene(mapping[srcStack], mapping[dstStack]);
+  }
+
   @Override
   public Chromosome[] crossover(Chromosome parentA, Chromosome parentB, int nGenes, State initialState) {
 
@@ -38,18 +51,5 @@ public class SameHeightAnyStackCrossover implements CrossoverAlgorithm {
       }
     }
     return new Chromosome[]{childA, childB};
-  }
-
-  private static void swapRemainingMoves(Chromosome parent, Chromosome child, int startMoveIndex, int nGenes, int[] mapping) {
-    for (int moveIndex = startMoveIndex; moveIndex < nGenes; moveIndex++) {
-      Gene parentMove = parent.getGene(moveIndex);
-      child.setGene(moveIndex, mapGene(parentMove, mapping));
-    }
-  }
-
-  private static Gene mapGene(Gene originalGene, int[] mapping) {
-    int srcStack = originalGene.getSourceStack();
-    int dstStack = originalGene.getDestinationStack();
-    return new Gene(mapping[srcStack], mapping[dstStack]);
   }
 }

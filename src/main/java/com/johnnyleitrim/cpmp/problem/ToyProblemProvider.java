@@ -14,16 +14,6 @@ public class ToyProblemProvider implements ProblemProvider {
     this.nProblems = nProblems;
   }
 
-  @Override
-  public Iterable<Problem> getProblems() {
-    Problem problem = generateMediumProblem();
-    List<Problem> problems = new ArrayList<>(nProblems);
-    for (int i = 0; i < nProblems; i++) {
-      problems.add(problem);
-    }
-    return problems;
-  }
-
   private static Problem generateHardProblem() {
     int nTiers = 6;
     int nStacks = 4;
@@ -45,5 +35,15 @@ public class ToyProblemProvider implements ProblemProvider {
     initialState[1] = new int[]{7, 6, 9};
     initialState[0] = new int[]{3, 2, 8};
     return new Problem("Toy Problem - Medium", new State(initialState, nStacks, nTiers));
+  }
+
+  @Override
+  public Iterable<Problem> getProblems() {
+    Problem problem = generateMediumProblem();
+    List<Problem> problems = new ArrayList<>(nProblems);
+    for (int i = 0; i < nProblems; i++) {
+      problems.add(problem);
+    }
+    return problems;
   }
 }

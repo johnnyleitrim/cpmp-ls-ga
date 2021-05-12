@@ -42,11 +42,11 @@ public class EvaluationUtils {
 
     if (!badMoves.isEmpty()) {
       Gene[] newMoves = fillChromosome(badMoves, newState);
-      for (int i = 0; i < newMoves.length; i++) {
+      for (Gene move : newMoves) {
         try {
-          Gene newMove = newMoves[i];
+          Gene newMove = move;
           newState.applyMove(newMove.getSourceStack(), newMove.getDestinationStack());
-          repairedGenes.add(newMoves[i]);
+          repairedGenes.add(move);
         } catch (InvalidMoveException e) {
           throw new RuntimeException(e);
         }

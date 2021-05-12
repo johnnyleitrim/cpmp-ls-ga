@@ -2,10 +2,12 @@ package com.johnnyleitrim.cpmp.ls;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.johnnyleitrim.cpmp.CommandOptions;
 import com.johnnyleitrim.cpmp.MathUtil;
@@ -16,6 +18,8 @@ import com.johnnyleitrim.cpmp.problem.BFProblemProvider;
 import com.johnnyleitrim.cpmp.problem.ProblemProvider;
 
 public class Main {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
   public static void main(String[] args) throws Exception {
     CommandOptions commandOptions = new CommandOptions(args);
@@ -34,19 +38,19 @@ public class Main {
 
     int[][] neighbourhoodMoveOptions = parseSearchMoves(neighbourhoodMoves);
 
-    System.out.println(":::::::::::::::::::::::::::::::::::::");
-    System.out.println(":           Base Seed: " + baseSeed);
-    System.out.println(":                Runs: " + runs);
-    System.out.println(":   Start BF Category: " + bfStart);
-    System.out.println(":     End BF Category: " + bfEnd);
-    System.out.println(": Max Search Duration: " + maxSearchDuration);
-    System.out.println(": Neighbourhood Moves: " + neighbourhoodMoves);
-    System.out.println(":        Perturbation: " + perturbation);
-    System.out.println(":         Lower Bound: " + lowerBoundAlgorithm.getClass().getSimpleName());
-    System.out.println(":::::::::::::::::::::::::::::::::::::");
+    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
+    LOGGER.info(":           Base Seed: {}", baseSeed);
+    LOGGER.info(":                Runs: {}", runs);
+    LOGGER.info(":   Start BF Category: {}", bfStart);
+    LOGGER.info(":     End BF Category: {}", bfEnd);
+    LOGGER.info(": Max Search Duration: {}", maxSearchDuration);
+    LOGGER.info(": Neighbourhood Moves: {}", neighbourhoodMoves);
+    LOGGER.info(":        Perturbation: {}", perturbation);
+    LOGGER.info(":         Lower Bound: {}", lowerBoundAlgorithm.getClass().getSimpleName());
+    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
 
     if (!commandOptions.hasArg("-execute")) {
-      System.out.println("Exiting...");
+      LOGGER.info("Exiting...");
       System.exit(0);
     }
 
@@ -56,30 +60,30 @@ public class Main {
         int minSearchMoves = searchMoves[0];
         int maxSearchMoves = searchMoves[1];
 
-        System.out.println(String.format("Min Search Moves: %d, Max Search Moves: %d", minSearchMoves, maxSearchMoves));
+        LOGGER.info(String.format("Min Search Moves: %d, Max Search Moves: %d", minSearchMoves, maxSearchMoves));
 
         for (Problem problem : problemProvider.getProblems()) {
 
-          System.out.println("==================================");
-          System.out.println(problem.getName());
-          System.out.println("==================================");
+          LOGGER.info("==================================");
+          LOGGER.info(problem.getName());
+          LOGGER.info("==================================");
 
           double[] nMoves = new double[runs];
           for (int i = 0; i < runs; i++) {
-            System.out.println("RUN " + i + " " + new Date());
+            LOGGER.info("RUN {}", i);
             Problem.setRandomSeed(baseSeed + (i * 10_000));
             IterativeLocalSearch localSearch = new IterativeLocalSearch(problem.getInitialState(), minSearchMoves, maxSearchMoves, lowerBoundAlgorithm, maxSearchDuration);
             long startTime = System.currentTimeMillis();
             List<Move> moves = localSearch.search(perturbation, returnFirstSolution);
             long duration = System.currentTimeMillis() - startTime;
-            System.out.println("Found solution in " + moves.size() + " moves " + new Date());
-            System.out.println("Runtime duration " + duration + "ms");
+            LOGGER.info("Found solution in {} moves ", moves.size());
+            LOGGER.info("Runtime duration {}ms", duration);
             nMoves[i] = moves.size();
           }
           MathUtil.Details details = MathUtil.calcDetails(nMoves);
-          System.out.println("Best: " + details.getBest());
-          System.out.println("Mean: " + details.getMean());
-          System.out.println(" Std: " + details.getStdDev());
+          LOGGER.info("Best: {}", details.getBest());
+          LOGGER.info("Mean: {}", details.getMean());
+          LOGGER.info(" Std: {}", details.getStdDev());
         }
       }
     }
