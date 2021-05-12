@@ -3,6 +3,9 @@ package com.johnnyleitrim.cpmp.ga;
 import java.time.Duration;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.johnnyleitrim.cpmp.Problem;
 import com.johnnyleitrim.cpmp.fitness.BFLowerBoundFitness;
 import com.johnnyleitrim.cpmp.fitness.FitnessAlgorithm;
@@ -19,13 +22,13 @@ import com.johnnyleitrim.cpmp.ls.IterativeLocalSearch;
 
 public class GenericAlgorithm {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(GenericAlgorithm.class);
+
   private static final double MUTATE_PROBABILITY = 0.05;
 
   private static final double CROSSOVER_PROBABILITY = 0.8;
 
   private final int nChromosomes;
-
-  private final Chromosome[] population;
 
   private final SelectionAlgorithm selectionAlgorithm;
 
@@ -66,8 +69,7 @@ public class GenericAlgorithm {
     this.performLocalSearch = performLocalSearch;
     this.problem = problem;
 
-    population = new Chromosome[nChromosomes];
-
+    Chromosome[] population = new Chromosome[nChromosomes];
     for (int i = 0; i < nChromosomes; i++) {
       int generatorIndex = 1;
       if (i % 10 == 0) {
@@ -78,109 +80,6 @@ public class GenericAlgorithm {
 
     evaluationResults = evaluate(population);
     updateBestSolution();
-  }
-
-  public EvaluationResult search(Duration maxDuration) {
-    startTime = System.currentTimeMillis();
-    long endTime = startTime + maxDuration.toMillis();
-    int generation = 1;
-    while (System.currentTimeMillis() < endTime) {
-      searchStep();
-      generation++;
-    }
-    System.out.println("\tPerformed " + generation + " generations");
-    return bestSolution;
-  }
-
-  private void searchStep() {
-    generateNewPopulation();
-    updateBestSolution();
-  }
-
-  private EvaluationResult[] evaluate(Chromosome[] populationToEvaluate) {
-    EvaluationResult[] populationEvaluationResults = new EvaluationResult[populationToEvaluate.length];
-    for (int i = 0; i < nChromosomes; i++) {
-      EvaluationResult result = EvaluationUtils.evaluate(problem, nGenes, populationToEvaluate[i], fitnessAlgorithm);
-      populationEvaluationResults[i] = result;
-    }
-    return populationEvaluationResults;
-  }
-
-  private void updateBestSolution() {
-    if (bestSolution == null) {
-      bestSolution = evaluationResults[0];
-    }
-
-    boolean foundImprovement = false;
-    for (int i = 0; i < evaluationResults.length; i++) {
-      EvaluationResult result = evaluationResults[i];
-      if (result.isBetter(bestSolution)) {
-        bestSolution = result;
-        foundImprovement = true;
-      }
-    }
-
-    bestSolution = bestSolution.copy();
-    nGenes = Math.min(nGenes, bestSolution.getNSolutionGenes());
-
-    if (foundImprovement) {
-      long secondsElapsed = 0;
-      if (startTime > 0) {
-        secondsElapsed = (System.currentTimeMillis() - startTime) / 1000;
-      }
-      System.out.println(String.format("\t[%s] Found better solution: %s", secondsElapsed, bestSolution));
-    }
-  }
-
-  private void generateNewPopulation() {
-    Chromosome[] matingPool = selectionAlgorithm.generateMatingPool(evaluationResults);
-    Chromosome[] newPopulation = new Chromosome[nChromosomes];
-    int newPopulationIndex = 0;
-    while (newPopulationIndex < nChromosomes) {
-      Chromosome parentA = getRandomParent(matingPool);
-      Chromosome parentB = getRandomParent(matingPool);
-
-      Chromosome[] children;
-      if (Problem.getRandom().nextFloat() < CROSSOVER_PROBABILITY) {
-        children = crossoverAlgorithm.crossover(parentA, parentB, nGenes, problem.getInitialState());
-      } else {
-        children = new Chromosome[]{parentA.copy(), parentB.copy()};
-      }
-
-      for (int i = 0; i < children.length; newPopulationIndex++, i++) {
-        Chromosome child = children[i];
-        if (Problem.getRandom().nextFloat() < mutationProbability) {
-          mutationAlgorithm.mutate(child, nGenes, problem.getInitialState());
-        }
-        if (performLocalSearch) {
-          localSearchAlgorithm.mutate(child, nGenes, problem.getInitialState());
-        }
-        newPopulation[newPopulationIndex] = child;
-      }
-    }
-
-    EvaluationResult[] newPopulationEvaluationResults = evaluate(newPopulation);
-
-    int repaired = 0;
-    for (EvaluationResult result : newPopulationEvaluationResults) {
-      if (result.isRepaired()) {
-        repaired++;
-      }
-    }
-    System.out.println(String.format("\tRepaired [%d]/[%d]", repaired, nChromosomes));
-
-    evaluationResults = replacementAlgorithm.generateNewPopulation(evaluationResults, newPopulationEvaluationResults);
-
-    double hammingMetric = getHammingMetric(evaluationResults, nGenes);
-    double clustering = getClustering(evaluationResults, nGenes);
-    System.out.println(String.format("\tHamming: [%f], Clustering: [%f], Mutation Rate: [%f]", hammingMetric, clustering, mutationProbability));
-
-    double threshold = nGenes / 3;
-    if (clustering < threshold) {
-      mutationProbability = Math.min(mutationProbability + mutationDelta, 90.0);
-    } else {
-      mutationProbability = Math.max(mutationProbability - mutationDelta, MUTATE_PROBABILITY);
-    }
   }
 
   private static Chromosome getRandomParent(Chromosome[] matingPool) {
@@ -234,5 +133,107 @@ public class GenericAlgorithm {
       }
     }
     return (double) totalHammingDistance / nPairs;
+  }
+
+  public EvaluationResult search(Duration maxDuration) {
+    startTime = System.currentTimeMillis();
+    long endTime = startTime + maxDuration.toMillis();
+    int generation = 1;
+    while (System.currentTimeMillis() < endTime) {
+      searchStep();
+      generation++;
+    }
+    LOGGER.info("Performed {} generations", generation);
+    return bestSolution;
+  }
+
+  private void searchStep() {
+    generateNewPopulation();
+    updateBestSolution();
+  }
+
+  private EvaluationResult[] evaluate(Chromosome[] populationToEvaluate) {
+    EvaluationResult[] populationEvaluationResults = new EvaluationResult[populationToEvaluate.length];
+    for (int i = 0; i < nChromosomes; i++) {
+      EvaluationResult result = EvaluationUtils.evaluate(problem, nGenes, populationToEvaluate[i], fitnessAlgorithm);
+      populationEvaluationResults[i] = result;
+    }
+    return populationEvaluationResults;
+  }
+
+  private void updateBestSolution() {
+    if (bestSolution == null) {
+      bestSolution = evaluationResults[0];
+    }
+
+    boolean foundImprovement = false;
+    for (EvaluationResult result : evaluationResults) {
+      if (result.isBetter(bestSolution)) {
+        bestSolution = result;
+        foundImprovement = true;
+      }
+    }
+
+    bestSolution = bestSolution.copy();
+    nGenes = Math.min(nGenes, bestSolution.getNSolutionGenes());
+
+    if (foundImprovement) {
+      long secondsElapsed = 0;
+      if (startTime > 0) {
+        secondsElapsed = (System.currentTimeMillis() - startTime) / 1000;
+      }
+      LOGGER.debug("[{}] Found better solution: {}", secondsElapsed, bestSolution);
+    }
+  }
+
+  private void generateNewPopulation() {
+    Chromosome[] matingPool = selectionAlgorithm.generateMatingPool(evaluationResults);
+    Chromosome[] newPopulation = new Chromosome[nChromosomes];
+    int newPopulationIndex = 0;
+    while (newPopulationIndex < nChromosomes) {
+      Chromosome parentA = getRandomParent(matingPool);
+      Chromosome parentB = getRandomParent(matingPool);
+
+      Chromosome[] children;
+      if (Problem.getRandom().nextFloat() < CROSSOVER_PROBABILITY) {
+        children = crossoverAlgorithm.crossover(parentA, parentB, nGenes, problem.getInitialState());
+      } else {
+        children = new Chromosome[]{parentA.copy(), parentB.copy()};
+      }
+
+      for (int i = 0; i < children.length; newPopulationIndex++, i++) {
+        Chromosome child = children[i];
+        if (Problem.getRandom().nextFloat() < mutationProbability) {
+          mutationAlgorithm.mutate(child, nGenes, problem.getInitialState());
+        }
+        if (performLocalSearch) {
+          localSearchAlgorithm.mutate(child, nGenes, problem.getInitialState());
+        }
+        newPopulation[newPopulationIndex] = child;
+      }
+    }
+
+    EvaluationResult[] newPopulationEvaluationResults = evaluate(newPopulation);
+
+    int repaired = 0;
+    for (EvaluationResult result : newPopulationEvaluationResults) {
+      if (result.isRepaired()) {
+        repaired++;
+      }
+    }
+    LOGGER.debug("Repaired [{}]/[{}]", repaired, nChromosomes);
+
+    evaluationResults = replacementAlgorithm.generateNewPopulation(evaluationResults, newPopulationEvaluationResults);
+
+    double hammingMetric = getHammingMetric(evaluationResults, nGenes);
+    double clustering = getClustering(evaluationResults, nGenes);
+    LOGGER.debug("Hamming: [{}], Clustering: [{}], Mutation Rate: [{}]", hammingMetric, clustering, mutationProbability);
+
+    double threshold = nGenes / 3;
+    if (clustering < threshold) {
+      mutationProbability = Math.min(mutationProbability + mutationDelta, 90.0);
+    } else {
+      mutationProbability = Math.max(mutationProbability - mutationDelta, MUTATE_PROBABILITY);
+    }
   }
 }

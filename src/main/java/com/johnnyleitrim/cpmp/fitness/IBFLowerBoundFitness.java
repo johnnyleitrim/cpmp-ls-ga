@@ -1,7 +1,6 @@
 package com.johnnyleitrim.cpmp.fitness;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +10,71 @@ import com.johnnyleitrim.cpmp.Problem;
 import com.johnnyleitrim.cpmp.state.State;
 
 public class IBFLowerBoundFitness implements FitnessAlgorithm {
+  private static int min(int[] arr) {
+    int min = Integer.MAX_VALUE;
+    for (int val : arr) {
+      if (val < min) {
+        min = val;
+      }
+    }
+    return min;
+  }
+
+  private static int[] getCumulative(int[] countByGroup, SortedSet<Integer> groups, int initialValue) {
+    int[] cumulativeByGroup = new int[countByGroup.length];
+    int cumulativeCount = initialValue;
+    for (int group : groups) {
+      cumulativeCount += countByGroup[group];
+      cumulativeByGroup[group] = cumulativeCount;
+    }
+    return cumulativeByGroup;
+  }
+
+  private static int[] getCumulativeSupply(StackPosition[] highestWellPlacedGroups, SortedSet<Integer> groups, State state) {
+    int[] supplyByGroup = new int[groups.iterator().next() + 1];
+    int emptyStackSupply = 0;
+    int nTiers = state.getNumberOfTiers();
+    for (int stack = 0; stack < state.getNumberOfStacks(); stack++) {
+      if (highestWellPlacedGroups[stack] == null) {
+        emptyStackSupply += nTiers;
+      } else {
+        supplyByGroup[highestWellPlacedGroups[stack].group] += nTiers - highestWellPlacedGroups[stack].height;
+      }
+    }
+    return getCumulative(supplyByGroup, groups, emptyStackSupply);
+  }
+
+  private static int[] getSurplus(int[] demandByGroup, int[] supplyByGroup, Set<Integer> groups) {
+    int[] surplusByGroup = new int[demandByGroup.length];
+    for (int group : groups) {
+      surplusByGroup[group] = demandByGroup[group] - supplyByGroup[group];
+    }
+    return surplusByGroup;
+  }
+
+  private static int getHighestSurplusGroup(int[] surplusByGroup) {
+    int highestSurplusGroup = 0;
+    int highestSurplus = Integer.MIN_VALUE;
+    for (int group = 1; group < surplusByGroup.length; group++) {
+      if (surplusByGroup[group] > highestSurplus) {
+        highestSurplusGroup = group;
+        highestSurplus = surplusByGroup[group];
+      }
+    }
+    return highestSurplusGroup;
+  }
+
+  private static List<Integer> argsort(boolean[] potentialStack, int[] values) {
+    List<Integer> indexes = new ArrayList<>(values.length);
+    for (int i = 0; i < values.length; i++) {
+      if (potentialStack[i]) {
+        indexes.add(i);
+      }
+    }
+    indexes.sort(Comparator.comparingInt(index -> values[index]));
+    return indexes;
+  }
+
   @Override
   public int calculateFitness(State state) {
     int nTiers = state.getNumberOfTiers();
@@ -136,76 +200,6 @@ public class IBFLowerBoundFitness implements FitnessAlgorithm {
     }
 
     return nb + minMisoverlaid + nGxMoves + ibf0 + ibf1;
-  }
-
-  private static int min(int[] arr) {
-    int min = Integer.MAX_VALUE;
-    for (int val : arr) {
-      if (val < min) {
-        min = val;
-      }
-    }
-    return min;
-  }
-
-  private static int[] getCumulative(int[] countByGroup, SortedSet<Integer> groups, int initialValue) {
-    int[] cumulativeByGroup = new int[countByGroup.length];
-    int cumulativeCount = initialValue;
-    for (int group : groups) {
-      cumulativeCount += countByGroup[group];
-      cumulativeByGroup[group] = cumulativeCount;
-    }
-    return cumulativeByGroup;
-  }
-
-  private static int[] getCumulativeSupply(StackPosition[] highestWellPlacedGroups, SortedSet<Integer> groups, State state) {
-    int[] supplyByGroup = new int[groups.iterator().next() + 1];
-    int emptyStackSupply = 0;
-    int nTiers = state.getNumberOfTiers();
-    for (int stack = 0; stack < state.getNumberOfStacks(); stack++) {
-      if (highestWellPlacedGroups[stack] == null) {
-        emptyStackSupply += nTiers;
-      } else {
-        supplyByGroup[highestWellPlacedGroups[stack].group] += nTiers - highestWellPlacedGroups[stack].height;
-      }
-    }
-    return getCumulative(supplyByGroup, groups, emptyStackSupply);
-  }
-
-  private static int[] getSurplus(int[] demandByGroup, int[] supplyByGroup, Set<Integer> groups) {
-    int[] surplusByGroup = new int[demandByGroup.length];
-    for (int group : groups) {
-      surplusByGroup[group] = demandByGroup[group] - supplyByGroup[group];
-    }
-    return surplusByGroup;
-  }
-
-  private static int getHighestSurplusGroup(int[] surplusByGroup) {
-    int highestSurplusGroup = 0;
-    int highestSurplus = Integer.MIN_VALUE;
-    for (int group = 1; group < surplusByGroup.length; group++) {
-      if (surplusByGroup[group] > highestSurplus) {
-        highestSurplusGroup = group;
-        highestSurplus = surplusByGroup[group];
-      }
-    }
-    return highestSurplusGroup;
-  }
-
-  private static List<Integer> argsort(boolean[] potentialStack, int[] values) {
-    List<Integer> indexes = new ArrayList<>(values.length);
-    for (int i = 0; i < values.length; i++) {
-      if (potentialStack[i]) {
-        indexes.add(i);
-      }
-    }
-    Collections.sort(indexes, new Comparator<Integer>() {
-      @Override
-      public int compare(Integer index1, Integer index2) {
-        return values[index1] - values[index2];
-      }
-    });
-    return indexes;
   }
 
   private static class StackPosition {

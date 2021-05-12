@@ -2,12 +2,15 @@ package com.johnnyleitrim.cpmp;
 
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.johnnyleitrim.cpmp.state.State;
 
 public class Problem {
 
   public static final int EMPTY = 0;
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(Problem.class);
   private static Random RANDOM = new Random();
 
   private final String name;
@@ -19,14 +22,6 @@ public class Problem {
     this.initialState = initialState;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public State getInitialState() {
-    return initialState;
-  }
-
   public static Random getRandom() {
     return RANDOM;
   }
@@ -36,8 +31,16 @@ public class Problem {
   }
 
   public static void setRandomSeed(long seed) {
-    System.out.println("Setting random seed: " + seed);
+    LOGGER.info("Setting random seed: {}", seed);
     Problem.RANDOM = new Random(seed);
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public State getInitialState() {
+    return initialState;
   }
 
   @Override

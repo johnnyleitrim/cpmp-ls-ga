@@ -1,6 +1,7 @@
 #!/bin/sh
 
-CMD="java -cp target/classes/ com.johnnyleitrim.cpmp.ga.Main -seed 183758 -lowerBound BF -selection Tournament -runs 5 -execute"
+CMD="mvn exec:java@genetic-algorithm"
+GLOBAL_PARAMS="-seed 183758 -lowerBound BF -selection Tournament -runs 5 -execute"
 
 MUTATIONS="ClearAndFillStack InvertMoves"
 CROSSOVERS="KPoint SameHeightAnyStack"
@@ -21,8 +22,8 @@ for mutation in $MUTATIONS; do
 		for mutation_delta in $MUTATION_DELTAS; do
 			for bf in $BF_CATEGORIES; do
 				for perform_local_search in $LOCAL_SEARCH; do
-					PARAMS="-mutation $mutation -mutationDelta $mutation_delta -crossover $crossover -bf $bf -performLocalSearch $perform_local_search"
-					$CMD $PARAMS 2>&1 | tee ${OUTPUT_DIR}/EXP_GA_${mutation}_${mutation_delta}_${crossover}_${bf}_${perform_local_search}.log &
+					PARAMS="$GLOBAL_PARAMS -mutation $mutation -mutationDelta $mutation_delta -crossover $crossover -bf $bf -performLocalSearch $perform_local_search"
+					$CMD -Dexec.args="$PARAMS" 2>&1 | tee ${OUTPUT_DIR}/EXP_GA_${mutation}_${mutation_delta}_${crossover}_${bf}_${perform_local_search}.log &
 					procs+=( $! )
 					if [ ${#procs[@]} -ge $NUM_CONCURRENT_EXPERIMENTS ]; then
 						for proc in ${procs[@]}; do

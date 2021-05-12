@@ -6,6 +6,10 @@ import com.johnnyleitrim.cpmp.ga.evaluation.EvaluationResult;
 
 public class StochasticUniversalSamplingSelection implements SelectionAlgorithm {
 
+  private static double adjustFitness(EvaluationResult evaluationResult, int maxFitness) {
+    return maxFitness - evaluationResult.getFitness() + 1;
+  }
+
   @Override
   public Chromosome[] generateMatingPool(EvaluationResult[] evaluationResults) {
     Chromosome[] matingPool = new Chromosome[evaluationResults.length];
@@ -52,11 +56,6 @@ public class StochasticUniversalSamplingSelection implements SelectionAlgorithm 
       matingPool[i] = selectedParent;
     }
     return matingPool;
-  }
-
-
-  private static double adjustFitness(EvaluationResult evaluationResult, int maxFitness) {
-    return maxFitness - evaluationResult.getFitness() + 1;
   }
 
   @Override

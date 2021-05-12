@@ -10,9 +10,8 @@ import java.util.stream.Stream;
 import com.johnnyleitrim.cpmp.Problem;
 
 public class BFProblemProvider implements ProblemProvider {
-  private final Path directory;
-
   private static final String BASE_DIR = System.getProperty("user.home") + "/Datasets/MSc/BF";
+  private final Path directory;
 
   public BFProblemProvider(String path) {
     this(Paths.get(BASE_DIR, path));
@@ -30,20 +29,20 @@ public class BFProblemProvider implements ProblemProvider {
     }
   }
 
+  private static Problem read(Path file) {
+    try {
+      return BFProblemReader.fromLines(file.toString(), Files.readAllLines(file));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Override
   public Iterable<Problem> getProblems() {
     try (Stream<Path> walk = Files.walk(directory)) {
       return walk.filter(Files::isRegularFile)
           .map(BFProblemProvider::read)
           .collect(Collectors.toList());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static Problem read(Path file) {
-    try {
-      return BFProblemReader.fromLines(file.toString(), Files.readAllLines(file));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

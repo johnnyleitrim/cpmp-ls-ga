@@ -12,6 +12,15 @@ public class SameHeightCrossover implements CrossoverAlgorithm {
 
   private static final int MIN_CROSSOVER_LENGTH = 3;
 
+  private static boolean isSameHeight(State stateA, State stateB) {
+    for (int stack = 0; stack < stateA.getNumberOfStacks(); stack++) {
+      if (stateA.getHeight(stack) != stateB.getHeight(stack)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public Chromosome[] crossover(Chromosome parentA, Chromosome parentB, int nGenes, State initialState) {
 
@@ -40,15 +49,6 @@ public class SameHeightCrossover implements CrossoverAlgorithm {
       }
     }
     return new Chromosome[]{childA, childB};
-  }
-
-  private static boolean isSameHeight(State stateA, State stateB) {
-    for (int stack = 0; stack < stateA.getNumberOfStacks(); stack++) {
-      if (stateA.getHeight(stack) != stateB.getHeight(stack)) {
-        return false;
-      }
-    }
-    return true;
   }
 
 }
