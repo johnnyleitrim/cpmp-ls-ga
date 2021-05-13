@@ -25,7 +25,7 @@ public class IterativeLocalSearchChromosomeGenerator implements ChromosomeGenera
 
   @Override
   public Chromosome generateChromosome() {
-    List<Move> moves = iterativeLocalSearch.search(perturbation, true);
+    List<Move> moves = iterativeLocalSearch.search(perturbation, 1);
     Gene[] genes = new Gene[moves.size()];
     for (int i = 0; i < moves.size(); i++) {
       Move move = moves.get(i);

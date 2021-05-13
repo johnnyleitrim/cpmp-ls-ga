@@ -55,7 +55,7 @@ public class IterativeLocalSearchMutation implements MutationAlgorithm {
     }
 
     IterativeLocalSearch iterativeLocalSearch = new IterativeLocalSearch(currentState, 1, nSearchMoves, fitnessAlgorithm, Duration.of(2, ChronoUnit.SECONDS));
-    List<Move> moves = iterativeLocalSearch.search(perturbation, true);
+    List<Move> moves = iterativeLocalSearch.search(perturbation, 1);
     for (int i = originalMoves; i < Math.min(originalMoves + moves.size(), nGenes); i++) {
       Move move = moves.get(i - originalMoves);
       chromosome.setGene(i, new Gene(move.getSrcStack(), move.getDstStack()));

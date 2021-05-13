@@ -30,7 +30,7 @@ public class IterativeLocalSearchGeneGenerator implements GeneGenerator {
   @Override
   public Gene[] generateGenes(State initialState, int nGenes) {
     IterativeLocalSearch iterativeLocalSearch = new IterativeLocalSearch(initialState, 1, nMaxSearchMoves, new BFLowerBoundFitness(), Duration.of(2, ChronoUnit.SECONDS));
-    List<Move> moves = iterativeLocalSearch.search(perturbation, true);
+    List<Move> moves = iterativeLocalSearch.search(perturbation, 1);
     Gene[] genes = new Gene[nGenes];
     for (int i = 0; i < nGenes; i++) {
       if (i < moves.size()) {
