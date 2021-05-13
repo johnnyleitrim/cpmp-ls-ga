@@ -28,13 +28,9 @@ public class InvertMovesMutationTest {
       new Gene(5, 10),
       new Gene(6, 10),
   });
-
-  private final int nGenes = 7;
-
+  private final InvertMovesMutation mutation = new InvertMovesMutation();
   @Mock
   private Random random;
-
-  private final InvertMovesMutation mutation = new InvertMovesMutation();
 
   @BeforeEach
   public void setup() {
@@ -45,7 +41,7 @@ public class InvertMovesMutationTest {
   public void itInvertsGenes() {
     doReturn(2, 3).when(random).nextInt(anyInt());
 
-    mutation.mutate(individual, nGenes, null);
+    mutation.mutate(individual, 7, null);
     assertThat(individual).isEqualTo(new Chromosome(new Gene[]{
         new Gene(0, 10),
         new Gene(1, 10),

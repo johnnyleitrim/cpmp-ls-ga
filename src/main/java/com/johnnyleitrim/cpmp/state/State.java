@@ -24,10 +24,6 @@ public class State {
 
   private final char[] emptyBay;
 
-  public enum StackState {
-    EMPTY, PARTIAL, FULL,
-  }
-
   public State(int[][] state, int nStacks, int nTiers) {
     this(flattenState(state), nStacks, nTiers);
   }
@@ -52,6 +48,16 @@ public class State {
     groupFormat = "%" + longestGroup + "d";
     emptyBay = new char[longestGroup];
     Arrays.fill(emptyBay, ' ');
+  }
+
+  private static int[] flattenState(int[][] state) {
+    int nTiers = state.length;
+    int nStacks = state[0].length;
+    int[] flatState = new int[nStacks * nTiers];
+    for (int tier = 0; tier < nTiers; tier++) {
+      System.arraycopy(state[tier], 0, flatState, tier * nStacks, nStacks);
+    }
+    return flatState;
   }
 
   public int getNumberOfStacks() {
@@ -173,13 +179,7 @@ public class State {
   }
 
 
-  private static final int[] flattenState(int[][] state) {
-    int nTiers = state.length;
-    int nStacks = state[0].length;
-    int[] flatState = new int[nStacks * nTiers];
-    for (int tier = 0; tier < nTiers; tier++) {
-      System.arraycopy(state[tier], 0, flatState, tier * nStacks, nStacks);
-    }
-    return flatState;
+  public enum StackState {
+    EMPTY, PARTIAL, FULL,
   }
 }

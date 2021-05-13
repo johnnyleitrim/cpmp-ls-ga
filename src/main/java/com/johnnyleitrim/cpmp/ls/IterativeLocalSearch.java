@@ -8,6 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.OptionalInt;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.johnnyleitrim.cpmp.Problem;
 import com.johnnyleitrim.cpmp.fitness.FitnessAlgorithm;
 import com.johnnyleitrim.cpmp.random.RandomStackGenerator;
@@ -17,16 +20,14 @@ import com.johnnyleitrim.cpmp.utils.MoveUtils;
 import com.johnnyleitrim.cpmp.utils.StackUtils;
 
 public class IterativeLocalSearch {
+  private static final Logger LOGGER = LoggerFactory.getLogger(IterativeLocalSearch.class);
+
   private final State initialState;
 
   private final int minSearchMoves;
   private final int maxSearchMoves;
   private final FitnessAlgorithm fitnessAlgorithm;
   private final long maxSearchDurationMillis;
-
-  public enum Perturbation {
-    RANDOM_MOVE, STACK_CLEARING, LOWEST_STACK_CLEARING, LOWEST_MISOVERLAID_STACK_CLEARING
-  }
 
   public IterativeLocalSearch(State initialState, int minSearchMoves, int maxSearchMoves, FitnessAlgorithm fitnessAlgorithm, Duration maxSearchDuration) {
     this.initialState = initialState;
@@ -38,18 +39,22 @@ public class IterativeLocalSearch {
 
   public List<Move> search(Perturbation perturbation, boolean returnFirstSolution) {
 
-    List<Move> bestSolution = Collections.EMPTY_LIST;
+    List<Move> bestSolution = Collections.emptyList();
     long startTime = System.currentTimeMillis();
+
     while (isStillRunning(startTime)) {
+      int localSearchMoves = 0;
+      int perturbationMoves = 0;
       State state = initialState;
-      List<Move> moves = new LinkedList<>();
 
       int currentCost = fitnessAlgorithm.calculateFitness(state);
 
       StepResult localSearchResult = performLocalSearchStep(state, currentCost);
       currentCost = localSearchResult.cost;
-      moves.addAll(localSearchResult.moves);
       state = localSearchResult.state;
+      localSearchMoves += localSearchResult.moves.size();
+
+      List<Move> moves = new LinkedList<>(localSearchResult.moves);
 
       int iteration = 0;
       while (currentCost != 0 && iteration < 1000 && isStillRunning(startTime)) {
@@ -61,22 +66,26 @@ public class IterativeLocalSearch {
           moves.addAll(perturbationResult.moves);
           moves.addAll(localSearchResult.moves);
           state = localSearchResult.state;
+
+          perturbationMoves += perturbationResult.moves.size();
+          localSearchMoves += localSearchResult.moves.size();
         }
 
         iteration += maxSearchMoves * (maxSearchMoves - minSearchMoves + 1); // For the perturbation
         iteration += 1; // For the perturbation
       }
+      LOGGER.debug("Local search moves: {}, Perturbation moves: {}", localSearchMoves, perturbationMoves);
       if (currentCost == 0) {
-        System.out.println("    Found solution in " + moves.size() + " moves, iterations: " + iteration);
+        LOGGER.debug("Found solution in {} moves, iterations: {}", moves.size(), iteration);
         if (bestSolution.isEmpty() || moves.size() < bestSolution.size()) {
-          System.out.println("  Found better solution in " + moves.size() + " moves");
+          LOGGER.debug("Found better solution in {} moves", moves.size());
           bestSolution = moves;
         }
         if (returnFirstSolution) {
           return moves;
         }
       } else {
-        System.out.println("    No solution found in iterations: " + iteration);
+        LOGGER.debug("No solution found in iterations: {}", iteration);
       }
     }
     return bestSolution;
@@ -185,6 +194,10 @@ public class IterativeLocalSearch {
 
   private boolean isStillRunning(long startTime) {
     return System.currentTimeMillis() < (startTime + maxSearchDurationMillis);
+  }
+
+  public enum Perturbation {
+    RANDOM_MOVE, STACK_CLEARING, LOWEST_STACK_CLEARING, LOWEST_MISOVERLAID_STACK_CLEARING
   }
 
   private static class StepResult {

@@ -33,6 +33,22 @@ public class Neighbourhood implements Iterable<Neighbour>, Iterator<Neighbour> {
     generate();
   }
 
+  private static Queue<Move> generateLevel(State state, int previousDstStack) {
+    int nStacks = state.getNumberOfStacks();
+    State.StackState[] stackStates = state.getStackStates();
+    Queue<Move> moves = new LinkedList<>();
+
+    for (int srcStack = 0; srcStack < nStacks; srcStack++) {
+      for (int dstStack = 0; dstStack < nStacks; dstStack++) {
+        if (srcStack != dstStack && srcStack != previousDstStack && stackStates[srcStack] != State.StackState.EMPTY && stackStates[dstStack] != State.StackState.FULL) {
+          moves.add(new Move(srcStack, dstStack));
+        }
+      }
+    }
+
+    return moves;
+  }
+
   @Override
   public Iterator<Neighbour> iterator() {
     return this;
@@ -94,21 +110,5 @@ public class Neighbourhood implements Iterable<Neighbour>, Iterator<Neighbour> {
 
   private void undoMove(Move move) {
     applyMove(new Move(move.getDstStack(), move.getSrcStack()));
-  }
-
-  private static Queue<Move> generateLevel(State state, int previousDstStack) {
-    int nStacks = state.getNumberOfStacks();
-    State.StackState[] stackStates = state.getStackStates();
-    Queue<Move> moves = new LinkedList<>();
-
-    for (int srcStack = 0; srcStack < nStacks; srcStack++) {
-      for (int dstStack = 0; dstStack < nStacks; dstStack++) {
-        if (srcStack != dstStack && srcStack != previousDstStack && stackStates[srcStack] != State.StackState.EMPTY && stackStates[dstStack] != State.StackState.FULL) {
-          moves.add(new Move(srcStack, dstStack));
-        }
-      }
-    }
-
-    return moves;
   }
 }

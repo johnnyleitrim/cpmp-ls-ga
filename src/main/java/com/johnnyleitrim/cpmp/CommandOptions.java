@@ -9,8 +9,8 @@ public class CommandOptions {
 
   public CommandOptions(String[] args) {
     arguments = new ArrayList<>(args.length);
-    for (int i = 0; i < args.length; i++) {
-      arguments.add(args[i]);
+    for (String arg : args) {
+      arguments.add(arg);
     }
   }
 
@@ -24,7 +24,7 @@ public class CommandOptions {
 
   public Optional<String> getArg(String option) {
     for (int i = 0; i < arguments.size(); i++) {
-      if (true == arguments.get(i).equalsIgnoreCase(option)) {
+      if (arguments.get(i).equalsIgnoreCase(option)) {
         return Optional.of(arguments.get(i + 1));
       }
     }

@@ -35,7 +35,6 @@ public class ExcellentMoveGeneGenerator implements GeneGenerator {
         throw new RuntimeException(e);
       }
     }
-//    System.out.println("Found " + excellentMovesFound + "/" + nGenes + " excellent moves");
     return genes;
   }
 
