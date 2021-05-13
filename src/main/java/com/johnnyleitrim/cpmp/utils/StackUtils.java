@@ -1,16 +1,15 @@
 package com.johnnyleitrim.cpmp.utils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import com.johnnyleitrim.cpmp.Problem;
 import com.johnnyleitrim.cpmp.ls.Move;
-import com.johnnyleitrim.cpmp.random.RandomStackGenerator;
 import com.johnnyleitrim.cpmp.state.MutableState;
 import com.johnnyleitrim.cpmp.state.State;
 
@@ -19,9 +18,34 @@ public class StackUtils {
   public static List<Move> clearStack(MutableState state, int stackToClear) {
     List<Move> moves = new LinkedList<>();
 
+    int nStacks = state.getNumberOfStacks();
+    int nTiers = state.getNumberOfTiers();
+
     while (state.getHeight(stackToClear) > 0) {
-      RandomStackGenerator stackGenerator = new RandomStackGenerator(state.getStackStates(), OptionalInt.of(stackToClear));
-      int dstStack = stackGenerator.getNextNonFullStack();
+      // Find a stack with a value lower than ours at the top
+      List<Integer> candidateDestinationStacks = new ArrayList<>(nStacks);
+      int srcGroup = state.getTopGroup(stackToClear);
+
+      for (int s = 0; s < nStacks; s++) {
+        if (stackToClear != s && state.getHeight(s) < nTiers) {
+          candidateDestinationStacks.add(s);
+        }
+      }
+
+      int dstStack = -1;
+      if (candidateDestinationStacks.size() > 0) {
+        candidateDestinationStacks.sort(Comparator.comparingInt(state::getTopGroup).reversed());
+        for (int candidateDestStack : candidateDestinationStacks) {
+          if (state.getTopGroup(candidateDestStack) <= srcGroup) {
+            dstStack = candidateDestStack;
+            break;
+          }
+        }
+        if (dstStack == -1) {
+          dstStack = candidateDestinationStacks.get(Problem.getRandom().nextInt(candidateDestinationStacks.size()));
+        }
+      }
+
       if (dstStack == -1) {
         return moves;
       } else {
