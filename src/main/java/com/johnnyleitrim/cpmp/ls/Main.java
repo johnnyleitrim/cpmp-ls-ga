@@ -28,7 +28,7 @@ public class Main {
     int runs = commandOptions.getIntArg("-runs").orElse(10);
     int bfStart = commandOptions.getIntArg("-bfStart").orElse(1);
     int bfEnd = commandOptions.getIntArg("-bfEnd").orElse(1);
-    boolean returnFirstSolution = commandOptions.getArg("-returnFirstSolution").map(Boolean::parseBoolean).orElse(false);
+    int maxSolutions = commandOptions.getIntArg("-maxSolutions").orElse(-1);
     Duration maxSearchDuration = Duration.of(commandOptions.getLongArg("-maxSearchDuration").orElse(5L), ChronoUnit.MINUTES);
     String neighbourhoodMoves = commandOptions.getArg("-neighbourhoods").orElse("1-1,1-2,2-2");
     Perturbation perturbation = Perturbation.valueOf(commandOptions.getArg("-perturbation").orElse("RANDOM_MOVE"));
@@ -47,6 +47,7 @@ public class Main {
     LOGGER.info(": Neighbourhood Moves: {}", neighbourhoodMoves);
     LOGGER.info(":        Perturbation: {}", perturbation);
     LOGGER.info(":         Lower Bound: {}", lowerBoundAlgorithm.getClass().getSimpleName());
+    LOGGER.info(":   Maximum Solutions: {}", maxSolutions);
     LOGGER.info(":::::::::::::::::::::::::::::::::::::");
 
     if (!commandOptions.hasArg("-execute")) {
@@ -74,7 +75,7 @@ public class Main {
             Problem.setRandomSeed(baseSeed + (i * 10_000));
             IterativeLocalSearch localSearch = new IterativeLocalSearch(problem.getInitialState(), minSearchMoves, maxSearchMoves, lowerBoundAlgorithm, maxSearchDuration);
             long startTime = System.currentTimeMillis();
-            List<Move> moves = localSearch.search(perturbation, returnFirstSolution);
+            List<Move> moves = localSearch.search(perturbation, maxSolutions);
             long duration = System.currentTimeMillis() - startTime;
             LOGGER.info("Found solution in {} moves ", moves.size());
             LOGGER.info("Runtime duration {}ms", duration);

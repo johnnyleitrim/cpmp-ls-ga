@@ -37,10 +37,11 @@ public class IterativeLocalSearch {
     this.maxSearchDurationMillis = maxSearchDuration.toMillis();
   }
 
-  public List<Move> search(Perturbation perturbation, boolean returnFirstSolution) {
+  public List<Move> search(Perturbation perturbation, int maxSolutions) {
 
     List<Move> bestSolution = Collections.emptyList();
     long startTime = System.currentTimeMillis();
+    int solutionCount = 0;
 
     while (isStillRunning(startTime)) {
       int localSearchMoves = 0;
@@ -77,12 +78,13 @@ public class IterativeLocalSearch {
       LOGGER.debug("Local search moves: {}, Perturbation moves: {}", localSearchMoves, perturbationMoves);
       if (currentCost == 0) {
         LOGGER.debug("Found solution in {} moves, iterations: {}", moves.size(), iteration);
+        solutionCount++;
         if (bestSolution.isEmpty() || moves.size() < bestSolution.size()) {
           LOGGER.debug("Found better solution in {} moves", moves.size());
           bestSolution = moves;
         }
-        if (returnFirstSolution) {
-          return moves;
+        if (maxSolutions > 0 && solutionCount >= maxSolutions) {
+          return bestSolution;
         }
       } else {
         LOGGER.debug("No solution found in iterations: {}", iteration);
