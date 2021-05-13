@@ -16,7 +16,6 @@ public class StatePanel extends JPanel {
   private BufferedImage image;
 
   public StatePanel(State state) {
-    super(true);
     this.state = state;
 
     addComponentListener(new ComponentAdapter() {
@@ -29,7 +28,7 @@ public class StatePanel extends JPanel {
 
   public void setState(State state) {
     this.state = state;
-    paintComponent(getGraphics());
+    repaint();
   }
 
   @Override
