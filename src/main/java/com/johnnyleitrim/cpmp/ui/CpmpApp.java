@@ -127,6 +127,8 @@ public class CpmpApp {
           MoveUtils.applyMove(state, moves.get(i));
           problemStates.add(state.copy());
         }
+        currentProblemState = 0;
+        statePanel.setState(problem.getInitialState());
         statusLine.setText(String.format("Solved in %d moves", moves.size()));
         solveButton.setText("Solve");
       });
