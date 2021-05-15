@@ -47,6 +47,7 @@ public class IterativeLocalSearch {
       int localSearchMoves = 0;
       int perturbationMoves = 0;
       State state = initialState;
+      int acceptanceCriteria = 0;
 
       int currentCost = fitnessAlgorithm.calculateFitness(state);
 
@@ -62,7 +63,7 @@ public class IterativeLocalSearch {
         StepResult perturbationResult = performPerturbationStep(perturbation, state);
         localSearchResult = performLocalSearchStep(perturbationResult.state, perturbationResult.cost);
 
-        if (localSearchResult.cost - currentCost < 3) {
+        if (localSearchResult.cost - currentCost < acceptanceCriteria) {
           currentCost = localSearchResult.cost;
           moves.addAll(perturbationResult.moves);
           moves.addAll(localSearchResult.moves);
@@ -70,6 +71,9 @@ public class IterativeLocalSearch {
 
           perturbationMoves += perturbationResult.moves.size();
           localSearchMoves += localSearchResult.moves.size();
+          acceptanceCriteria = 0;
+        } else {
+          acceptanceCriteria++;
         }
 
         iteration += maxSearchMoves * (maxSearchMoves - minSearchMoves + 1); // For the perturbation
