@@ -71,7 +71,7 @@ public class StackUtils {
       int bestSourceStack = -1;
 
       for (int stack = 0; stack < nStacks; stack++) {
-        if (stack != stackToFill) {
+        if (stack != stackToFill && StackUtils.isMisOverlaid(state, stack)) {
           int topGroup = state.getTopGroup(stack);
           if (topGroup != Problem.EMPTY && topGroup <= stackToFillTopGroup && topGroup > highestGroup) {
             highestGroup = topGroup;
