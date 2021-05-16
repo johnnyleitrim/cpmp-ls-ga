@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CMD="mvn exec:java@iterated-local-search-algorithm -runs 10 -maxSearchDuration 1 -returnFirstSolution true -perturbation LOWEST_MISOVERLAID_STACK_CLEARING -lowerBound BF -execute"
+CMD="mvn exec:java@iterated-local-search-algorithm -runs 10 -maxSearchDuration 1 -perturbation LOWEST_MISOVERLAID_STACK_CLEARING -lowerBound BF -execute"
 
 NEIGHBOURHOODS="1-2"
 NUM_BF_CATEGORIES=32
