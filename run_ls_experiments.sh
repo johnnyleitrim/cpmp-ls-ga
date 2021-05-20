@@ -1,6 +1,7 @@
 #!/bin/sh
 
-CMD="mvn exec:java@iterated-local-search-algorithm -runs 10 -maxSearchDuration 1 -perturbation LOWEST_MISOVERLAID_STACK_CLEARING -lowerBound BF -execute"
+CMD="mvn exec:java@iterated-local-search"
+PARAMS="-runs 1 -maxSolutions 1 -perturbation LOWEST_MISOVERLAID_STACK_CLEARING -lowerBound BF -execute"
 
 NEIGHBOURHOODS="1-2"
 NUM_BF_CATEGORIES=32
@@ -27,7 +28,7 @@ for neighbourhood in $NEIGHBOURHOODS; do
 		fi
 
 		BF_PARAMS="-bfStart $current_bf_start -bfEnd $current_bf_end"
-		$CMD -neighbourhoods $neighbourhood $BF_PARAMS | tee ${OUTPUT_DIR}/EXP_LS_LOWEST_MISOVERLAID_STACK_CLEARING_MOVES_${neighbourhood}_BF_${current_bf_start}_${current_bf_end}.log &
+		$CMD -Dexec.args="$PARAMS $BF_PARAMS -neighbourhoods $neighbourhood" 2>&1 | tee ${OUTPUT_DIR}/EXP_LS_LOWEST_MISOVERLAID_STACK_CLEARING_MOVES_${neighbourhood}_BF_${current_bf_start}_${current_bf_end}.log &
 		current_bf_start=$((current_bf_start + BF_CATEGORIES_PER_EXPERIMENT))
 	done
 done
