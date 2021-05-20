@@ -8,7 +8,11 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.BiFunction;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -45,6 +49,8 @@ public class CpmpApp {
   private List<State> problemStates;
   private int currentProblemState = 0;
   private JLabel statusLine;
+  private int nSolvers = 6;
+  private ExecutorService executorService = Executors.newFixedThreadPool(nSolvers);
 
   private static final BFLowerBoundFitness FITNESS = new BFLowerBoundFitness();
 
@@ -75,11 +81,11 @@ public class CpmpApp {
 
     JMenuItem bfProblem = new JMenuItem("Open BF Problem");
     fileMenu.add(bfProblem);
-    addOpenFileListener(frame, bfProblem, "BF Problem Files", "bay", lines -> BFProblemReader.fromLines("BF Problem", lines));
+    addOpenFileListener(frame, bfProblem, "BF Problem Files", "bay", (lines, filename) -> BFProblemReader.fromLines(filename, lines));
 
     JMenuItem cvProblem = new JMenuItem("Open CV Problem");
     fileMenu.add(cvProblem);
-    addOpenFileListener(frame, cvProblem, "CV Problem Files", "dat", lines -> CVProblemReader.fromLines("CV Problem", lines));
+    addOpenFileListener(frame, cvProblem, "CV Problem Files", "dat", (lines, filename) -> CVProblemReader.fromLines(filename, lines));
 
     menuBar.add(fileMenu);
     frame.setJMenuBar(menuBar);
@@ -106,37 +112,46 @@ public class CpmpApp {
   }
 
   private void showState(int stateIndex) {
-    State state = problemStates.get(stateIndex);
-    int fitness = FITNESS.calculateFitness(state);
+    if (problemStates != null) {
+      State state = problemStates.get(stateIndex);
+      int fitness = FITNESS.calculateFitness(state);
 
-    statusLine.setText(String.format("Move %d out of %d [Fitness: %d]", stateIndex, problemStates.size() - 1, fitness));
-    statePanel.setState(state);
-    statePanel.repaint();
+      statusLine.setText(String.format("Move %d out of %d [Fitness: %d]", stateIndex, problemStates.size() - 1, fitness));
+      statePanel.setState(state);
+      statePanel.repaint();
+    }
   }
 
   private void solveProblem(Problem problem, JButton solveButton) {
     if (problem != null) {
       solveButton.setText("Solving...");
-      Thread t = new Thread(() -> {
-        IterativeLocalSearch cpmpSolver = new IterativeLocalSearch(problem.getInitialState(), 1, 2, new BFLowerBoundFitness(), Duration.ofMinutes(1));
-        List<Move> moves = cpmpSolver.search(IterativeLocalSearch.Perturbation.LOWEST_MISOVERLAID_STACK_CLEARING, 2);
-        MutableState state = problem.getInitialState().copy();
-        problemStates = new ArrayList<>(moves.size() + 1);
-        problemStates.add(state.copy());
-        for (int i = 0; i < moves.size(); i++) {
-          MoveUtils.applyMove(state, moves.get(i));
-          problemStates.add(state.copy());
+      problemStates = null;
+      Thread solver = new Thread(() -> {
+        List<Future<List<State>>> solvers = new ArrayList<>(nSolvers);
+        for (int tNo = 0; tNo < nSolvers; tNo++) {
+          solvers.add(executorService.submit(new Solver(problem)));
+        }
+        for (Future<List<State>> solverFuture : solvers) {
+          try {
+            List<State> solverStates = solverFuture.get();
+            if (problemStates == null || problemStates.size() > solverStates.size()) {
+              problemStates = solverStates;
+            }
+            LOGGER.info("Found solution with {} states", solverStates.size());
+          } catch (Exception e) {
+            LOGGER.error("Problem finding solution", e);
+          }
         }
         currentProblemState = 0;
         statePanel.setState(problem.getInitialState());
-        statusLine.setText(String.format("Solved in %d moves", moves.size()));
+        statusLine.setText(String.format("Solved in %d moves", problemStates.size() - 1));
         solveButton.setText("Solve");
       });
-      t.start();
+      solver.start();
     }
   }
 
-  private void addOpenFileListener(JFrame frame, JMenuItem menuItem, String fileDesc, String fileExt, Function<List<String>, Problem> problemReader) {
+  private void addOpenFileListener(JFrame frame, JMenuItem menuItem, String fileDesc, String fileExt, BiFunction<List<String>, String, Problem> problemReader) {
     menuItem.addActionListener(
         enterPress -> {
           JFileChooser chooser = new JFileChooser();
@@ -148,12 +163,35 @@ public class CpmpApp {
             try {
               statusLine.setText("Loaded " + file.getName());
               List<String> lines = Files.readAllLines(Paths.get(file.toURI()));
-              problem = problemReader.apply(lines);
+              problem = problemReader.apply(lines, file.getName());
               statePanel.setState(problem.getInitialState());
             } catch (Exception e) {
               JOptionPane.showMessageDialog(frame, "Cannot open file: " + e.getMessage());
             }
           }
         });
+  }
+
+  private static class Solver implements Callable<List<State>> {
+
+    private final Problem problem;
+
+    private Solver(Problem problem) {
+      this.problem = problem;
+    }
+
+    @Override
+    public List<State> call() {
+      IterativeLocalSearch cpmpSolver = new IterativeLocalSearch(problem.getInitialState(), 1, 2, new BFLowerBoundFitness(), Duration.ofMinutes(1));
+      List<Move> moves = cpmpSolver.search(IterativeLocalSearch.Perturbation.LOWEST_MISOVERLAID_STACK_CLEARING, 1);
+      MutableState state = problem.getInitialState().copy();
+      List<State> problemStates = new ArrayList<>(moves.size() + 1);
+      problemStates.add(state.copy());
+      for (int i = 0; i < moves.size(); i++) {
+        MoveUtils.applyMove(state, moves.get(i));
+        problemStates.add(state.copy());
+      }
+      return problemStates;
+    }
   }
 }
