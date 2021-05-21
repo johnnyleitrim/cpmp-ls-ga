@@ -84,6 +84,7 @@ public class IterativeLocalSearch {
       if (currentCost == 0) {
         LOGGER.debug("Found solution in {} moves, iterations: {}", moves.size(), iteration);
         solutionCount++;
+        moves = removeTransientMoves(moves);
         if (bestSolution.isEmpty() || moves.size() < bestSolution.size()) {
           LOGGER.debug("Found better solution in {} moves", moves.size());
           bestSolution = moves;
@@ -95,12 +96,16 @@ public class IterativeLocalSearch {
         LOGGER.debug("No solution found in iterations: {}", iteration);
       }
     }
-    int nMovesBeforeRemoval = bestSolution.size();
-    bestSolution = MoveUtils.removeTransientMoves(bestSolution, initialState.getNumberOfStacks());
-    if (bestSolution.size() < nMovesBeforeRemoval) {
-      LOGGER.info("Removed {} transient moves", nMovesBeforeRemoval - bestSolution.size());
-    }
     return bestSolution;
+  }
+
+  private List<Move> removeTransientMoves(List<Move> moves) {
+    int nMovesBeforeRemoval = moves.size();
+    moves = MoveUtils.removeTransientMoves(moves, initialState.getNumberOfStacks());
+    if (moves.size() < nMovesBeforeRemoval) {
+      LOGGER.info("Removed {} transient moves", nMovesBeforeRemoval - moves.size());
+    }
+    return moves;
   }
 
   private StepResult performLocalSearchStep(State state, int currentCost) {
@@ -150,7 +155,6 @@ public class IterativeLocalSearch {
   }
 
   private StepResult performStackClearingStep(State state) {
-
     // Randomly pick a stack.
     RandomStackGenerator stackGenerator = new RandomStackGenerator(state.getStackStates(), OptionalInt.empty());
     int stackToClear = stackGenerator.getNextNonEmptyStack();
@@ -166,9 +170,8 @@ public class IterativeLocalSearch {
   }
 
   private StepResult performClearAndFillLowestMisOverlaidStackStep(State state) {
-
     // Find the lowest stack. If there is more than one, pick one at random.
-    List<Integer> lowestStacks = StackUtils.getLowestStacks(state, stack -> state.isMisOverlaid(stack));
+    List<Integer> lowestStacks = StackUtils.getLowestStacks(state, state::isMisOverlaid);
     lowestStacks.sort(Comparator.comparingInt(stack -> state.getGroup(stack, 0)));
     int stackToClear = lowestStacks.get(0);
     return performClearAndFillStackStep(state, stackToClear);
@@ -177,7 +180,9 @@ public class IterativeLocalSearch {
   private StepResult performClearAndFillStackStep(State state, int stackToClear) {
     MutableState newState = state.copy();
     List<Move> moves = StackUtils.clearStack(newState, stackToClear);
-    moves.addAll(StackUtils.fillStack(newState, stackToClear));
+    if (Features.instance.isFillStackEnabled()) {
+      moves.addAll(StackUtils.fillStack(newState, stackToClear));
+    }
 
     int newCost = fitnessAlgorithm.calculateFitness(newState);
 
@@ -206,12 +211,15 @@ public class IterativeLocalSearch {
   }
 
   private Neighbour getBestNeighbour(List<Neighbour> neighbours) {
-    neighbours.sort(Comparator.comparingInt(Neighbour::getLastMovedContainer).reversed());
-    int bestNeighbours = 0;
-    int highestContainer = neighbours.get(0).getLastMovedContainer();
-    for (int i = 0; i < neighbours.size(); i++) {
-      if (neighbours.get(i).getLastMovedContainer() == highestContainer) {
-        bestNeighbours++;
+    int bestNeighbours = neighbours.size();
+    if (Features.instance.isImprovedTieBreakingEnabled()) {
+      neighbours.sort(Comparator.comparingInt(Neighbour::getSumContainerGroups).reversed());
+      bestNeighbours = 0;
+      int highestContainer = neighbours.get(0).getSumContainerGroups();
+      for (Neighbour neighbour : neighbours) {
+        if (neighbour.getSumContainerGroups() == highestContainer) {
+          bestNeighbours++;
+        }
       }
     }
     return neighbours.get(Problem.getRandom().nextInt(bestNeighbours));

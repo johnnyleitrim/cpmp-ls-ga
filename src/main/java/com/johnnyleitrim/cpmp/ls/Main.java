@@ -53,6 +53,7 @@ public class Main {
     LOGGER.info(":        Perturbation: {}", perturbation);
     LOGGER.info(":         Lower Bound: {}", lowerBoundAlgorithm.getClass().getSimpleName());
     LOGGER.info(":   Maximum Solutions: {}", maxSolutions);
+    LOGGER.info(":            Features: {}", Features.instance);
     LOGGER.info(":::::::::::::::::::::::::::::::::::::");
 
     if (!commandOptions.hasArg("-execute")) {

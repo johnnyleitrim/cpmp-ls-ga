@@ -2,19 +2,19 @@ package com.johnnyleitrim.cpmp.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -23,6 +23,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
@@ -33,24 +35,21 @@ import org.slf4j.LoggerFactory;
 
 import com.johnnyleitrim.cpmp.Problem;
 import com.johnnyleitrim.cpmp.fitness.BFLowerBoundFitness;
-import com.johnnyleitrim.cpmp.ls.IterativeLocalSearch;
-import com.johnnyleitrim.cpmp.ls.Move;
 import com.johnnyleitrim.cpmp.problem.BFProblemReader;
 import com.johnnyleitrim.cpmp.problem.CVProblemReader;
-import com.johnnyleitrim.cpmp.state.MutableState;
+import com.johnnyleitrim.cpmp.problem.EMMProblemReader;
 import com.johnnyleitrim.cpmp.state.State;
-import com.johnnyleitrim.cpmp.utils.MoveUtils;
 
 public class CpmpApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(CpmpApp.class);
 
-  private StatePanel statePanel;
-  private Problem problem;
+  private final StatePanel statePanel;
+  private Solver.SolverParams solverParams = new Solver.SolverParams();
   private List<State> problemStates;
   private int currentProblemState = 0;
-  private JLabel statusLine;
-  private int nSolvers = 6;
-  private ExecutorService executorService = Executors.newFixedThreadPool(nSolvers);
+  private final JLabel statusLine;
+  private final int nSolvers = 6;
+  private final ExecutorService executorService = Executors.newFixedThreadPool(nSolvers);
 
   private static final BFLowerBoundFitness FITNESS = new BFLowerBoundFitness();
 
@@ -69,8 +68,26 @@ public class CpmpApp {
     frame.add(statePanel, BorderLayout.CENTER);
 
     JButton solveButton = new JButton("Solve");
-    solveButton.addActionListener(e -> solveProblem(problem, (JButton) e.getSource()));
-    frame.add(solveButton, BorderLayout.NORTH);
+    solveButton.addActionListener(e -> solveProblem((JButton) e.getSource()));
+
+    JPanel topSection = new JPanel(new GridLayout(3, 1));
+    topSection.add(solveButton);
+
+    List<JToggleButton> featureToggleButtons = FeatureToggleButtons.createToggleButtons();
+    JPanel featuresSection = new JPanel(new GridLayout(1, featureToggleButtons.size()));
+    for (JToggleButton button : featureToggleButtons) {
+      featuresSection.add(button);
+    }
+    topSection.add(featuresSection);
+
+    List<JComboBox> parameterBoxes = new SolverParamComboBoxes(solverParams).getComboBoxes();
+    JPanel parameterSection = new JPanel(new GridLayout(1, parameterBoxes.size()));
+    for (JComboBox box : parameterBoxes) {
+      parameterSection.add(box);
+    }
+    topSection.add(parameterSection);
+
+    frame.add(topSection, BorderLayout.NORTH);
 
     statusLine = new JLabel("No problem loaded", SwingConstants.CENTER);
     statusLine.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -87,20 +104,28 @@ public class CpmpApp {
     fileMenu.add(cvProblem);
     addOpenFileListener(frame, cvProblem, "CV Problem Files", "dat", (lines, filename) -> CVProblemReader.fromLines(filename, lines));
 
+    JMenuItem emmProblem = new JMenuItem("Open EMM Problem");
+    fileMenu.add(emmProblem);
+    addOpenFileListener(frame, emmProblem, "EMM Problem Files", "bay", (lines, filename) -> EMMProblemReader.fromLines(filename, lines));
+
     menuBar.add(fileMenu);
     frame.setJMenuBar(menuBar);
 
     statePanel.registerKeyboardAction((e) -> {
-          currentProblemState = Math.min(currentProblemState + 1, problemStates.size() - 1);
-          showState(currentProblemState);
+          if (problemStates != null) {
+            currentProblemState = Math.min(currentProblemState + 1, problemStates.size() - 1);
+            showState(currentProblemState);
+          }
         },
         "Next Move",
         KeyStroke.getKeyStroke("RIGHT"),
         JComponent.WHEN_IN_FOCUSED_WINDOW);
 
     statePanel.registerKeyboardAction((e) -> {
-          currentProblemState = Math.max(currentProblemState - 1, 0);
-          showState(currentProblemState);
+          if (problemStates != null) {
+            currentProblemState = Math.max(currentProblemState - 1, 0);
+            showState(currentProblemState);
+          }
         },
         "Previous Move",
         KeyStroke.getKeyStroke("LEFT"),
@@ -122,14 +147,14 @@ public class CpmpApp {
     }
   }
 
-  private void solveProblem(Problem problem, JButton solveButton) {
-    if (problem != null) {
+  private void solveProblem(JButton solveButton) {
+    if (solverParams.getProblem() != null) {
       solveButton.setText("Solving...");
       problemStates = null;
       Thread solver = new Thread(() -> {
         List<Future<List<State>>> solvers = new ArrayList<>(nSolvers);
         for (int tNo = 0; tNo < nSolvers; tNo++) {
-          solvers.add(executorService.submit(new Solver(problem)));
+          solvers.add(executorService.submit(new Solver(solverParams)));
         }
         for (Future<List<State>> solverFuture : solvers) {
           try {
@@ -143,7 +168,7 @@ public class CpmpApp {
           }
         }
         currentProblemState = 0;
-        statePanel.setState(problem.getInitialState());
+        statePanel.setState(solverParams.getProblem().getInitialState());
         statusLine.setText(String.format("Solved in %d moves", problemStates.size() - 1));
         solveButton.setText("Solve");
       });
@@ -163,35 +188,13 @@ public class CpmpApp {
             try {
               statusLine.setText("Loaded " + file.getName());
               List<String> lines = Files.readAllLines(Paths.get(file.toURI()));
-              problem = problemReader.apply(lines, file.getName());
-              statePanel.setState(problem.getInitialState());
+              solverParams.setProblem(problemReader.apply(lines, file.getName()));
+              statePanel.setState(solverParams.getProblem().getInitialState());
             } catch (Exception e) {
+              LOGGER.error("Error opening file {}", file.getName(), e);
               JOptionPane.showMessageDialog(frame, "Cannot open file: " + e.getMessage());
             }
           }
         });
-  }
-
-  private static class Solver implements Callable<List<State>> {
-
-    private final Problem problem;
-
-    private Solver(Problem problem) {
-      this.problem = problem;
-    }
-
-    @Override
-    public List<State> call() {
-      IterativeLocalSearch cpmpSolver = new IterativeLocalSearch(problem.getInitialState(), 1, 2, new BFLowerBoundFitness(), Duration.ofMinutes(1));
-      List<Move> moves = cpmpSolver.search(IterativeLocalSearch.Perturbation.LOWEST_MISOVERLAID_STACK_CLEARING, 1);
-      MutableState state = problem.getInitialState().copy();
-      List<State> problemStates = new ArrayList<>(moves.size() + 1);
-      problemStates.add(state.copy());
-      for (int i = 0; i < moves.size(); i++) {
-        MoveUtils.applyMove(state, moves.get(i));
-        problemStates.add(state.copy());
-      }
-      return problemStates;
-    }
   }
 }

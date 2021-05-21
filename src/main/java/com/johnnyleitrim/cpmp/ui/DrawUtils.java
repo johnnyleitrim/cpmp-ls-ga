@@ -13,9 +13,9 @@ import com.johnnyleitrim.cpmp.state.State;
 
 public class DrawUtils {
 
-  private static Color SLOT_SPACES = new Color(240, 240, 240);
+  private static final Color SLOT_SPACES = new Color(240, 240, 240);
 
-  private static Color MIS_OVERLAID_BG = new Color(220, 220, 220);
+  private static final Color MIS_OVERLAID_BG = new Color(220, 220, 220);
 
   public static void drawState(State state, Graphics g, int screenWidth, int screenHeight) {
 

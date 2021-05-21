@@ -44,8 +44,7 @@ public class EvaluationUtils {
       Gene[] newMoves = fillChromosome(badMoves, newState);
       for (Gene move : newMoves) {
         try {
-          Gene newMove = move;
-          newState.applyMove(newMove.getSourceStack(), newMove.getDestinationStack());
+          newState.applyMove(move.getSourceStack(), move.getDestinationStack());
           repairedGenes.add(move);
         } catch (InvalidMoveException e) {
           throw new RuntimeException(e);

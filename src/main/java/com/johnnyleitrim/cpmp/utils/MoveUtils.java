@@ -12,17 +12,6 @@ import com.johnnyleitrim.cpmp.state.MutableState;
 
 public class MoveUtils {
 
-  public static MutableState applyMove(MutableState state, Iterable<Move> moves) {
-    try {
-      for (Move move : moves) {
-        state.applyMove(move.getSrcStack(), move.getDstStack());
-      }
-    } catch (InvalidMoveException e) {
-      throw new RuntimeException(e);
-    }
-    return state;
-  }
-
   public static MutableState applyMove(MutableState state, Move... moves) {
     try {
       for (Move move : moves) {
@@ -63,9 +52,8 @@ public class MoveUtils {
         }
       }
 
-      int moveTurn = i;
-      moveTurns[src] = new MoveInfo(moveTurn, true);
-      moveTurns[dst] = new MoveInfo(moveTurn, false);
+      moveTurns[src] = new MoveInfo(i, true);
+      moveTurns[dst] = new MoveInfo(i, false);
     }
     return transientMoves;
   }
@@ -74,8 +62,7 @@ public class MoveUtils {
     List<Move> newMoves = new ArrayList<>(moves.size());
     MoveInfo[] moveTurns = new MoveInfo[nStacks];
     Arrays.fill(moveTurns, new MoveInfo(-1, false));
-    for (int i = 0; i < moves.size(); i++) {
-      Move move = moves.get(i);
+    for (Move move : moves) {
       int src = move.getSrcStack();
       int dst = move.getDstStack();
 

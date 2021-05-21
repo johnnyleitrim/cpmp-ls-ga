@@ -25,8 +25,6 @@ public class ExcellentMoveGeneGenerator implements GeneGenerator {
     MutableState state = initialState.copy();
     Gene[] genes = new Gene[nGenes];
 
-    int excellentMovesFound = 0;
-
     for (int i = 0; i < nGenes; i++) {
       genes[i] = generateGene(state);
       try {

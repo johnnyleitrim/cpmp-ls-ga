@@ -1,6 +1,6 @@
 package com.johnnyleitrim.cpmp;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,10 +8,7 @@ public class CommandOptions {
   private final List<String> arguments;
 
   public CommandOptions(String[] args) {
-    arguments = new ArrayList<>(args.length);
-    for (String arg : args) {
-      arguments.add(arg);
-    }
+    arguments = Arrays.asList(args);
   }
 
   public int size() {

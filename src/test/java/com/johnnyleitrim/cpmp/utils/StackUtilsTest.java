@@ -4,12 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import com.johnnyleitrim.cpmp.ls.Features;
 import com.johnnyleitrim.cpmp.state.MutableState;
 import com.johnnyleitrim.cpmp.state.State;
 
 public class StackUtilsTest {
+
+  @BeforeAll
+  public static void setup() {
+    Features.instance.setDontFillFromGoodStackEnabled(true);
+  }
 
   @Test
   public void itFillsStack() {

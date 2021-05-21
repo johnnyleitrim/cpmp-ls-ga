@@ -14,6 +14,7 @@
     <dep.slf4j.version>1.7.5</dep.slf4j.version>
     <dep.junit.version>5.7.0</dep.junit.version>
     <dep.mockito.version>3.7.7</dep.mockito.version>
+    <dep.surefire.version>2.22.0</dep.surefire.version>
   </properties>
 
   <dependencies>
@@ -25,6 +26,12 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
+      <version>${dep.junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <version>${dep.junit.version}</version>
       <scope>test</scope>
     </dependency>
@@ -50,6 +57,16 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${dep.surefire.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${dep.surefire.version}</version>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
