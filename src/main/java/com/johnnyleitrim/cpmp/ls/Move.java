@@ -1,5 +1,7 @@
 package com.johnnyleitrim.cpmp.ls;
 
+import java.util.Objects;
+
 public class Move {
   private final int srcStack;
   private final int dstStack;
@@ -24,5 +26,19 @@ public class Move {
     str.append("->");
     str.append(dstStack);
     return str.toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Move move = (Move) o;
+    return srcStack == move.srcStack && dstStack == move.dstStack;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(srcStack, dstStack);
   }
 }

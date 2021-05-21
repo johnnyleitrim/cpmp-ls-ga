@@ -4,12 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import com.johnnyleitrim.cpmp.ls.Features;
 import com.johnnyleitrim.cpmp.state.MutableState;
 import com.johnnyleitrim.cpmp.state.State;
 
 public class StackUtilsTest {
+
+  @BeforeAll
+  public static void setup() {
+    Features.instance.setDontFillFromGoodStackEnabled(true);
+  }
 
   @Test
   public void itFillsStack() {
@@ -59,7 +66,7 @@ public class StackUtilsTest {
 
     assertThat(state.getGroup(0, 0)).isEqualTo(9);
     assertThat(state.getGroup(0, 1)).isEqualTo(8);
-    assertThat(state.getGroup(0, 2)).isEqualTo(7);
+    assertThat(state.getGroup(0, 2)).isEqualTo(6);
   }
 
   @Test
@@ -76,7 +83,7 @@ public class StackUtilsTest {
 
     assertThat(state.getGroup(0, 0)).isEqualTo(3);
     assertThat(state.getGroup(0, 1)).isEqualTo(2);
-    assertThat(state.getGroup(0, 2)).isEqualTo(1);
+    assertThat(state.getGroup(4, 0)).isEqualTo(1);
   }
 
   @Test
@@ -154,23 +161,4 @@ public class StackUtilsTest {
 
     assertThat(actual).isFalse();
   }
-
-  @Test
-  public void itFindsMisOverlaidStacks() {
-    int nStacks = 5;
-    int nTiers = 3;
-
-    int[][] stateA = new int[nTiers][nStacks];
-    stateA[2] = new int[]{0, 0, 0, 1, 1};
-    stateA[1] = new int[]{2, 0, 1, 3, 2};
-    stateA[0] = new int[]{1, 1, 1, 2, 2};
-    State state = new State(stateA, nStacks, nTiers);
-
-    assertThat(StackUtils.isMisOverlaid(state, 0)).isTrue();
-    assertThat(StackUtils.isMisOverlaid(state, 1)).isFalse();
-    assertThat(StackUtils.isMisOverlaid(state, 2)).isFalse();
-    assertThat(StackUtils.isMisOverlaid(state, 3)).isTrue();
-    assertThat(StackUtils.isMisOverlaid(state, 4)).isFalse();
-  }
-
 }

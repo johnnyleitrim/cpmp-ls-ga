@@ -2,7 +2,9 @@ package com.johnnyleitrim.cpmp.ls;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -15,6 +17,7 @@ import com.johnnyleitrim.cpmp.Problem;
 import com.johnnyleitrim.cpmp.fitness.FitnessAlgorithm;
 import com.johnnyleitrim.cpmp.ls.IterativeLocalSearch.Perturbation;
 import com.johnnyleitrim.cpmp.problem.BFProblemProvider;
+import com.johnnyleitrim.cpmp.problem.CVProblemProvider;
 import com.johnnyleitrim.cpmp.problem.ProblemProvider;
 
 public class Main {
@@ -24,10 +27,11 @@ public class Main {
   public static void main(String[] args) throws Exception {
     CommandOptions commandOptions = new CommandOptions(args);
 
-    long baseSeed = commandOptions.getLongArg("-seed").orElse(System.currentTimeMillis());
+    long baseSeed = commandOptions.getLongArg("maxSolutions").orElse(System.currentTimeMillis());
     int runs = commandOptions.getIntArg("-runs").orElse(10);
     int bfStart = commandOptions.getIntArg("-bfStart").orElse(1);
     int bfEnd = commandOptions.getIntArg("-bfEnd").orElse(1);
+    Optional<String> cvPrefix = commandOptions.getArg("-cvPrefix");
     int maxSolutions = commandOptions.getIntArg("-maxSolutions").orElse(-1);
     Duration maxSearchDuration = Duration.of(commandOptions.getLongArg("-maxSearchDuration").orElse(5L), ChronoUnit.MINUTES);
     String neighbourhoodMoves = commandOptions.getArg("-neighbourhoods").orElse("1-1,1-2,2-2");
@@ -43,11 +47,13 @@ public class Main {
     LOGGER.info(":                Runs: {}", runs);
     LOGGER.info(":   Start BF Category: {}", bfStart);
     LOGGER.info(":     End BF Category: {}", bfEnd);
+    LOGGER.info(":      CV File Prefix: {}", cvPrefix.orElse(""));
     LOGGER.info(": Max Search Duration: {}", maxSearchDuration);
     LOGGER.info(": Neighbourhood Moves: {}", neighbourhoodMoves);
     LOGGER.info(":        Perturbation: {}", perturbation);
     LOGGER.info(":         Lower Bound: {}", lowerBoundAlgorithm.getClass().getSimpleName());
     LOGGER.info(":   Maximum Solutions: {}", maxSolutions);
+    LOGGER.info(":            Features: {}", Features.instance);
     LOGGER.info(":::::::::::::::::::::::::::::::::::::");
 
     if (!commandOptions.hasArg("-execute")) {
@@ -55,8 +61,14 @@ public class Main {
       System.exit(0);
     }
 
+    List<ProblemProvider> problemProviders;
+    if (cvPrefix.isPresent()) {
+      problemProviders = Collections.singletonList(new CVProblemProvider(cvPrefix.get()));
+    } else {
+      problemProviders = IntStream.range(bfStart, bfEnd + 1).mapToObj(i -> new BFProblemProvider(i)).collect(Collectors.toList());
+    }
 
-    for (ProblemProvider problemProvider : IntStream.range(bfStart, bfEnd + 1).mapToObj(i -> new BFProblemProvider(i)).collect(Collectors.toList())) {
+    for (ProblemProvider problemProvider : problemProviders) {
       for (int[] searchMoves : neighbourhoodMoveOptions) {
         int minSearchMoves = searchMoves[0];
         int maxSearchMoves = searchMoves[1];

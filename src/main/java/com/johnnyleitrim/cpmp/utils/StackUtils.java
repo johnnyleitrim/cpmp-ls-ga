@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import com.johnnyleitrim.cpmp.Problem;
+import com.johnnyleitrim.cpmp.ls.Features;
 import com.johnnyleitrim.cpmp.ls.Move;
 import com.johnnyleitrim.cpmp.state.MutableState;
 import com.johnnyleitrim.cpmp.state.State;
@@ -18,27 +19,25 @@ public class StackUtils {
   public static List<Move> clearStack(MutableState state, int stackToClear) {
     List<Move> moves = new LinkedList<>();
 
-    int nStacks = state.getNumberOfStacks();
-    int nTiers = state.getNumberOfTiers();
-
     while (state.getHeight(stackToClear) > 0) {
       // Find a stack with a value lower than ours at the top
-      List<Integer> candidateDestinationStacks = new ArrayList<>(nStacks);
-      int srcGroup = state.getTopGroup(stackToClear);
-
-      for (int s = 0; s < nStacks; s++) {
-        if (stackToClear != s && state.getHeight(s) < nTiers) {
-          candidateDestinationStacks.add(s);
-        }
-      }
+      List<Integer> candidateDestinationStacks = getNonFullStacks(state, s -> stackToClear != s);
 
       int dstStack = -1;
       if (candidateDestinationStacks.size() > 0) {
-        candidateDestinationStacks.sort(Comparator.comparingInt(state::getTopGroup).reversed());
-        for (int candidateDestStack : candidateDestinationStacks) {
-          if (state.getTopGroup(candidateDestStack) <= srcGroup) {
-            dstStack = candidateDestStack;
-            break;
+        if (Features.instance.isClearToBestStackEnabled()) {
+          int srcGroup = state.getTopGroup(stackToClear);
+          candidateDestinationStacks.sort(Comparator.comparingInt(state::getTopGroup).reversed());
+          for (int candidateDestStack : candidateDestinationStacks) {
+            if (state.getTopGroup(candidateDestStack) <= srcGroup) {
+              dstStack = candidateDestStack;
+              break;
+            }
+          }
+          if (dstStack == -1) {
+            // If there are no stacks with a smaller value container on top,
+            // Move to the stack with the lowest value container.
+            dstStack = candidateDestinationStacks.get(candidateDestinationStacks.size() - 1);
           }
         }
         if (dstStack == -1) {
@@ -70,8 +69,10 @@ public class StackUtils {
       int highestGroup = Problem.EMPTY;
       int bestSourceStack = -1;
 
+      Predicate<Integer> srcStackFilter = Features.instance.isDontFillFromGoodStackEnabled() ? state::isMisOverlaid : s -> true;
+
       for (int stack = 0; stack < nStacks; stack++) {
-        if (stack != stackToFill && StackUtils.isMisOverlaid(state, stack)) {
+        if (stack != stackToFill && srcStackFilter.test(stack)) {
           int topGroup = state.getTopGroup(stack);
           if (topGroup != Problem.EMPTY && topGroup <= stackToFillTopGroup && topGroup > highestGroup) {
             highestGroup = topGroup;
@@ -89,16 +90,30 @@ public class StackUtils {
     return moves;
   }
 
+  public static List<Integer> getNonFullStacks(State state, Predicate<Integer> stackFilter) {
+    int nStacks = state.getNumberOfStacks();
+    int nTiers = state.getNumberOfTiers();
+
+    List<Integer> nonFullStacks = new ArrayList<>(nStacks);
+
+    for (int s = 0; s < nStacks; s++) {
+      if (state.getHeight(s) < nTiers && stackFilter.test(s)) {
+        nonFullStacks.add(s);
+      }
+    }
+    return nonFullStacks;
+  }
+
   public static List<Integer> getLowestStacks(State state) {
     return getLowestStacks(state, ignored -> true);
   }
 
-  public static List<Integer> getLowestStacks(State state, Predicate<Integer> filter) {
+  public static List<Integer> getLowestStacks(State state, Predicate<Integer> stackFilter) {
     int nStacks = state.getNumberOfStacks();
     int lowestStackHeight = Integer.MAX_VALUE;
     List<Integer> lowestStacks = new ArrayList<>(nStacks);
     for (int stack = 0; stack < nStacks; stack++) {
-      if (filter.test(stack)) {
+      if (stackFilter.test(stack)) {
         int stackHeight = state.getHeight(stack);
         if (stackHeight < lowestStackHeight) {
           lowestStackHeight = stackHeight;
@@ -110,22 +125,6 @@ public class StackUtils {
       }
     }
     return lowestStacks;
-  }
-
-  public static boolean isMisOverlaid(State state, int stack) {
-    int nTiers = state.getNumberOfTiers();
-    int highestPriorityGroup = Problem.EMPTY;
-    for (int tier = 0; tier < nTiers; tier++) {
-      int priorityGroup = state.getGroup(stack, tier);
-      if (priorityGroup != Problem.EMPTY) {
-        if (priorityGroup > highestPriorityGroup && highestPriorityGroup != Problem.EMPTY) {
-          return true;
-        } else if (highestPriorityGroup == Problem.EMPTY || priorityGroup < highestPriorityGroup) {
-          highestPriorityGroup = priorityGroup;
-        }
-      }
-    }
-    return false;
   }
 
   public static boolean mapStacksSameHeight(State stateA, State stateB, StackMapping stackMapping) {

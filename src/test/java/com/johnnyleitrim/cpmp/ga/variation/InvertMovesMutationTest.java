@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doReturn;
 
 import java.util.Random;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +36,11 @@ public class InvertMovesMutationTest {
   @BeforeEach
   public void setup() {
     Problem.setRandom(random);
+  }
+
+  @AfterAll
+  public static void teardown() {
+    Problem.setRandomSeed(System.currentTimeMillis());
   }
 
   @Test

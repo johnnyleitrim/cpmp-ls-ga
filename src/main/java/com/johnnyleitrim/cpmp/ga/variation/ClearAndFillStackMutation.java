@@ -31,7 +31,7 @@ public class ClearAndFillStackMutation implements MutationAlgorithm {
     }
 
     // Find the lowest stack. If there is more than one, pick one at random.
-    List<Integer> lowestStacks = StackUtils.getLowestStacks(currentState, stack -> StackUtils.isMisOverlaid(currentState, stack));
+    List<Integer> lowestStacks = StackUtils.getLowestStacks(currentState, currentState::isMisOverlaid);
     int stackToClear = lowestStacks.get(Problem.getRandom().nextInt(lowestStacks.size()));
 
     List<Move> moves = StackUtils.clearStack(currentState, stackToClear);
