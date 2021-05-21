@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.OptionalInt;
@@ -94,6 +95,11 @@ public class IterativeLocalSearch {
         LOGGER.debug("No solution found in iterations: {}", iteration);
       }
     }
+    int nMovesBeforeRemoval = bestSolution.size();
+    bestSolution = MoveUtils.removeTransientMoves(bestSolution, initialState.getNumberOfStacks());
+    if (bestSolution.size() < nMovesBeforeRemoval) {
+      LOGGER.info("Removed {} transient moves", nMovesBeforeRemoval - bestSolution.size());
+    }
     return bestSolution;
   }
 
@@ -162,8 +168,9 @@ public class IterativeLocalSearch {
   private StepResult performClearAndFillLowestMisOverlaidStackStep(State state) {
 
     // Find the lowest stack. If there is more than one, pick one at random.
-    List<Integer> lowestStacks = StackUtils.getLowestStacks(state, stack -> StackUtils.isMisOverlaid(state, stack));
-    int stackToClear = lowestStacks.get(Problem.getRandom().nextInt(lowestStacks.size()));
+    List<Integer> lowestStacks = StackUtils.getLowestStacks(state, stack -> state.isMisOverlaid(stack));
+    lowestStacks.sort(Comparator.comparingInt(stack -> state.getGroup(stack, 0)));
+    int stackToClear = lowestStacks.get(0);
     return performClearAndFillStackStep(state, stackToClear);
   }
 
@@ -195,7 +202,19 @@ public class IterativeLocalSearch {
       }
     }
 
-    return bestNeighbour == null ? null : bestNeighbours.get(Problem.getRandom().nextInt(bestNeighbours.size()));
+    return bestNeighbour == null ? null : getBestNeighbour(bestNeighbours);
+  }
+
+  private Neighbour getBestNeighbour(List<Neighbour> neighbours) {
+    neighbours.sort(Comparator.comparingInt(Neighbour::getLastMovedContainer).reversed());
+    int bestNeighbours = 0;
+    int highestContainer = neighbours.get(0).getLastMovedContainer();
+    for (int i = 0; i < neighbours.size(); i++) {
+      if (neighbours.get(i).getLastMovedContainer() == highestContainer) {
+        bestNeighbours++;
+      }
+    }
+    return neighbours.get(Problem.getRandom().nextInt(bestNeighbours));
   }
 
   private boolean isStillRunning(long startTime) {

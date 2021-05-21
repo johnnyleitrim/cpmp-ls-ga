@@ -71,7 +71,7 @@ public class StackUtils {
       int bestSourceStack = -1;
 
       for (int stack = 0; stack < nStacks; stack++) {
-        if (stack != stackToFill && StackUtils.isMisOverlaid(state, stack)) {
+        if (stack != stackToFill && state.isMisOverlaid(stack)) {
           int topGroup = state.getTopGroup(stack);
           if (topGroup != Problem.EMPTY && topGroup <= stackToFillTopGroup && topGroup > highestGroup) {
             highestGroup = topGroup;
@@ -110,22 +110,6 @@ public class StackUtils {
       }
     }
     return lowestStacks;
-  }
-
-  public static boolean isMisOverlaid(State state, int stack) {
-    int nTiers = state.getNumberOfTiers();
-    int highestPriorityGroup = Problem.EMPTY;
-    for (int tier = 0; tier < nTiers; tier++) {
-      int priorityGroup = state.getGroup(stack, tier);
-      if (priorityGroup != Problem.EMPTY) {
-        if (priorityGroup > highestPriorityGroup && highestPriorityGroup != Problem.EMPTY) {
-          return true;
-        } else if (highestPriorityGroup == Problem.EMPTY || priorityGroup < highestPriorityGroup) {
-          highestPriorityGroup = priorityGroup;
-        }
-      }
-    }
-    return false;
   }
 
   public static boolean mapStacksSameHeight(State stateA, State stateB, StackMapping stackMapping) {

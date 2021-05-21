@@ -18,6 +18,8 @@ public class State {
 
   protected final int[] stackHeights;
 
+  protected final boolean[] stackMisOverlaid;
+
   private final SortedSet<Integer> groups;
 
   private final String groupFormat;
@@ -35,6 +37,9 @@ public class State {
 
     stackHeights = new int[nStacks];
     calculateStackHeights();
+
+    stackMisOverlaid = new boolean[nStacks];
+    calculateMisOverlaidStacks();
 
     groups = new TreeSet<>(Comparator.reverseOrder());
 
@@ -85,16 +90,7 @@ public class State {
   }
 
   public boolean isMisOverlaid(int stack) {
-    for (int tier = 0; tier < nTiers - 1; tier++) {
-      int group = getGroup(stack, tier);
-      if (group == Problem.EMPTY) {
-        return false;
-      }
-      if (group < getGroup(stack, tier + 1)) {
-        return true;
-      }
-    }
-    return false;
+    return stackMisOverlaid[stack];
   }
 
   public int getHeight(int stack) {
@@ -165,6 +161,26 @@ public class State {
     return (tier * nStacks) + stack;
   }
 
+  protected void calculateMisOverlaidStack(int stack) {
+    stackMisOverlaid[stack] = false;
+    for (int tier = 0; tier < nTiers - 1; tier++) {
+      int group = getGroup(stack, tier);
+      if (group == Problem.EMPTY) {
+        break;
+      }
+      if (group < getGroup(stack, tier + 1)) {
+        stackMisOverlaid[stack] = true;
+        break;
+      }
+    }
+  }
+
+  private void calculateMisOverlaidStacks() {
+    for (int stack = 0; stack < nStacks; stack++) {
+      calculateMisOverlaidStack(stack);
+    }
+  }
+
   private void calculateStackHeights() {
     for (int stack = 0; stack < nStacks; stack++) {
       int height = 0;
@@ -177,7 +193,6 @@ public class State {
       stackHeights[stack] = height;
     }
   }
-
 
   public enum StackState {
     EMPTY, PARTIAL, FULL,

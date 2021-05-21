@@ -68,11 +68,12 @@ public class Neighbourhood implements Iterable<Neighbour>, Iterator<Neighbour> {
     }
     Move lastMove = moveLevels.get(lastLevel).remove();
     moves[lastLevel] = lastMove;
+    int lastMovedContainer = currentState.getTopGroup(lastMove.getSrcStack());
     applyMove(lastMove);
     int fitness = fitnessAlgorithm.calculateFitness(currentState);
     undoMove(lastMove);
     checkAndGenerate();
-    return new Neighbour(fitness, moves);
+    return new Neighbour(fitness, lastMovedContainer, moves);
   }
 
   private void checkAndGenerate() {
