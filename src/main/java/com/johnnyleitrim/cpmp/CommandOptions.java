@@ -36,7 +36,7 @@ public class CommandOptions {
     return getArg(option).map(Integer::parseInt);
   }
 
-  public Optional<Double> getDoubleArg(String option) {
-    return getArg(option).map(Double::parseDouble);
+  public Optional<Boolean> getBoolArg(String option) {
+    return getArg(option).map(Boolean::parseBoolean);
   }
 }

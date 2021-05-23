@@ -4,19 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.johnnyleitrim.cpmp.ls.Features;
 import com.johnnyleitrim.cpmp.state.MutableState;
 import com.johnnyleitrim.cpmp.state.State;
+import com.johnnyleitrim.cpmp.strategy.StackFillingStrategies;
 
 public class StackUtilsTest {
-
-  @BeforeAll
-  public static void setup() {
-    Features.instance.setDontFillFromGoodStackEnabled(true);
-  }
 
   @Test
   public void itFillsStack() {
@@ -28,7 +22,7 @@ public class StackUtilsTest {
     internalState[0] = new int[]{0, 2, 8};
 
     MutableState state = new MutableState(internalState, nStacks, nTiers);
-    StackUtils.fillStack(state, 0);
+    StackUtils.fillStack(state, 0, StackFillingStrategies.LARGEST_CONTAINER);
 
     assertThat(state.getGroup(0, 0)).isEqualTo(5);
     assertThat(state.getGroup(0, 1)).isEqualTo(4);
@@ -45,7 +39,7 @@ public class StackUtilsTest {
     internalState[0] = new int[]{4, 2, 8};
 
     MutableState state = new MutableState(internalState, nStacks, nTiers);
-    StackUtils.fillStack(state, 0);
+    StackUtils.fillStack(state, 0, StackFillingStrategies.LARGEST_CONTAINER);
 
     assertThat(state.getGroup(0, 0)).isEqualTo(4);
     assertThat(state.getGroup(0, 1)).isEqualTo(4);
@@ -62,11 +56,11 @@ public class StackUtilsTest {
     internalState[0] = new int[]{0, 7, 4};
 
     MutableState state = new MutableState(internalState, nStacks, nTiers);
-    StackUtils.fillStack(state, 0);
+    StackUtils.fillStack(state, 0, StackFillingStrategies.LARGEST_CONTAINER);
 
     assertThat(state.getGroup(0, 0)).isEqualTo(9);
     assertThat(state.getGroup(0, 1)).isEqualTo(8);
-    assertThat(state.getGroup(0, 2)).isEqualTo(6);
+    assertThat(state.getGroup(0, 2)).isEqualTo(7);
   }
 
   @Test
@@ -79,7 +73,7 @@ public class StackUtilsTest {
     internalState[0] = new int[]{0, 0, 0, 0, 1};
 
     MutableState state = new MutableState(internalState, nStacks, nTiers);
-    StackUtils.fillStack(state, 0);
+    StackUtils.fillStack(state, 0, StackFillingStrategies.LARGEST_MIS_OVERLAID_CONTAINER);
 
     assertThat(state.getGroup(0, 0)).isEqualTo(3);
     assertThat(state.getGroup(0, 1)).isEqualTo(2);
@@ -114,51 +108,5 @@ public class StackUtilsTest {
     List<Integer> lowestStacks = StackUtils.getLowestStacks(state, stack -> state.getTopGroup(stack) == 1);
 
     assertThat(lowestStacks).containsExactly(0, 2);
-  }
-
-  @Test
-  public void itMapsStacksWithSameHeight() {
-    int nStacks = 5;
-    int nTiers = 3;
-
-    int[][] stateA = new int[nTiers][nStacks];
-    stateA[2] = new int[]{0, 0, 0, 0, 1};
-    stateA[1] = new int[]{1, 0, 1, 0, 1};
-    stateA[0] = new int[]{1, 1, 1, 1, 1};
-
-    int[][] stateB = new int[nTiers][nStacks];
-    stateB[2] = new int[]{0, 0, 0, 1, 0};
-    stateB[1] = new int[]{0, 1, 1, 1, 0};
-    stateB[0] = new int[]{1, 1, 1, 1, 1};
-
-    StackUtils.StackMapping stackMapping = new StackUtils.StackMapping(nStacks);
-
-    boolean actual = StackUtils.mapStacksSameHeight(new State(stateA, nStacks, nTiers), new State(stateB, nStacks, nTiers), stackMapping);
-
-    assertThat(actual).isTrue();
-    assertThat(stackMapping.getAToB()).containsExactly(1, 0, 2, 4, 3);
-    assertThat(stackMapping.getBToA()).containsExactly(1, 0, 2, 4, 3);
-  }
-
-  @Test
-  public void itDoesntMapsStacksWithDifferentHeight() {
-    int nStacks = 5;
-    int nTiers = 3;
-
-    int[][] stateA = new int[nTiers][nStacks];
-    stateA[2] = new int[]{0, 0, 0, 0, 0};
-    stateA[1] = new int[]{1, 0, 1, 0, 1};
-    stateA[0] = new int[]{1, 1, 1, 1, 1};
-
-    int[][] stateB = new int[nTiers][nStacks];
-    stateB[2] = new int[]{1, 1, 1, 1, 1};
-    stateB[1] = new int[]{1, 1, 1, 1, 1};
-    stateB[0] = new int[]{1, 1, 1, 1, 1};
-
-    StackUtils.StackMapping stackMapping = new StackUtils.StackMapping(nStacks);
-
-    boolean actual = StackUtils.mapStacksSameHeight(new State(stateA, nStacks, nTiers), new State(stateB, nStacks, nTiers), stackMapping);
-
-    assertThat(actual).isFalse();
   }
 }
