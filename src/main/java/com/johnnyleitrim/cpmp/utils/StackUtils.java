@@ -1,23 +1,22 @@
 package com.johnnyleitrim.cpmp.utils;
 
+import com.johnnyleitrim.cpmp.ls.Move;
+import com.johnnyleitrim.cpmp.state.MutableState;
+import com.johnnyleitrim.cpmp.state.State;
+import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
+import com.johnnyleitrim.cpmp.strategy.StackFillingStrategy;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import com.johnnyleitrim.cpmp.ls.Move;
-import com.johnnyleitrim.cpmp.state.MutableState;
-import com.johnnyleitrim.cpmp.state.State;
-import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
-import com.johnnyleitrim.cpmp.strategy.StackFillingStrategy;
-
 public class StackUtils {
 
   public static List<Move> clearStack(MutableState state, int stackToClear, StackClearingStrategy strategy) {
     List<Move> moves = new LinkedList<>();
     while (state.getHeight(stackToClear) > 0) {
-      Optional<Integer> dstStack = strategy.apply(state, stackToClear);
+      Optional<Integer> dstStack = strategy.selectStack(state, stackToClear);
       if (dstStack.isEmpty()) {
         return moves;
       } else {
@@ -31,7 +30,7 @@ public class StackUtils {
     List<Move> moves = new LinkedList<>();
     int nTiers = state.getNumberOfTiers();
     while (state.getHeight(stackToFill) < nTiers) {
-      Optional<Integer> srcStack = strategy.apply(state, stackToFill);
+      Optional<Integer> srcStack = strategy.selectStack(state, stackToFill);
       if (srcStack.isEmpty()) {
         return moves;
       } else {

@@ -117,7 +117,7 @@ public class IterativeLocalSearch {
 
     MutableState newState = state.copy();
     ClearStackSelectionStrategy clearStackSelectionStrategy = strategyConfig.getClearStackSelectionStrategy();
-    int stackToClear = clearStackSelectionStrategy.apply(newState);
+    int stackToClear = clearStackSelectionStrategy.selectStack(newState);
     List<Move> moves = StackUtils.clearStack(newState, stackToClear, strategyConfig.getClearStackStrategy());
     if (strategyConfig.isFillStackAfterClearing()) {
       moves.addAll(StackUtils.fillStack(newState, stackToClear, strategyConfig.getFillStackStrategy()));
@@ -144,7 +144,7 @@ public class IterativeLocalSearch {
       }
     }
 
-    return bestNeighbour == null ? null : strategyConfig.getBestNeighbourTieBreakingStrategy().apply(bestNeighbours);
+    return bestNeighbour == null ? null : strategyConfig.getBestNeighbourTieBreakingStrategy().getBestNeighbour(bestNeighbours);
   }
 
   private boolean hasNotExceededMaxDuration(long startTime) {

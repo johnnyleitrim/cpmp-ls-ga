@@ -1,9 +1,8 @@
 package com.johnnyleitrim.cpmp.strategy;
 
-import java.util.List;
-import java.util.function.Function;
-
 import com.johnnyleitrim.cpmp.ls.Neighbour;
+import java.util.List;
 
-public interface BestNeighbourTieBreakingStrategy extends Function<List<Neighbour>, Neighbour> {
+public interface BestNeighbourTieBreakingStrategy extends Strategy {
+  Neighbour getBestNeighbour(List<Neighbour> neighbours);
 }

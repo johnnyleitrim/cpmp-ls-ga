@@ -1,27 +1,27 @@
 package com.johnnyleitrim.cpmp.strategy;
 
+import com.johnnyleitrim.cpmp.Problem;
+import com.johnnyleitrim.cpmp.state.State;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import com.johnnyleitrim.cpmp.Problem;
-import com.johnnyleitrim.cpmp.state.State;
-
 public class StackFillingStrategies {
 
-  public static final StackFillingStrategy LARGEST_CONTAINER = new BaseStrategy(false);
+  public static final StackFillingStrategy LARGEST_CONTAINER = new Strategy("Largest container", false);
 
-  public static final StackFillingStrategy LARGEST_MIS_OVERLAID_CONTAINER = new BaseStrategy(true);
+  public static final StackFillingStrategy LARGEST_MIS_OVERLAID_CONTAINER = new Strategy("Largest mis-overlaid container", true);
 
-  private static class BaseStrategy implements StackFillingStrategy {
+  private static class Strategy extends BaseStrategy implements StackFillingStrategy {
 
     private final boolean misOverlaidOnly;
 
-    private BaseStrategy(boolean misOverlaidOnly) {
+    private Strategy(String name, boolean misOverlaidOnly) {
+      super(name);
       this.misOverlaidOnly = misOverlaidOnly;
     }
 
     @Override
-    public Optional<Integer> apply(State state, Integer stackToFill) {
+    public Optional<Integer> selectStack(State state, int stackToFill) {
       int nStacks = state.getNumberOfStacks();
 
       int highestGroup = Problem.EMPTY;
