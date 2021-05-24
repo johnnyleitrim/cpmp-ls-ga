@@ -2,7 +2,7 @@ package com.johnnyleitrim.cpmp.random;
 
 import java.util.OptionalInt;
 
-import com.johnnyleitrim.cpmp.Problem;
+import com.johnnyleitrim.cpmp.Random;
 import com.johnnyleitrim.cpmp.state.State;
 
 public class RandomStackGenerator {
@@ -22,7 +22,7 @@ public class RandomStackGenerator {
       }
     }
     for (int i = randomStacks.length - 1; i > 0; i--) {
-      int index = Problem.getRandom().nextInt(i + 1);
+      int index = Random.getRandomIndex(i + 1);
       // Simple swap
       int a = randomStacks[index];
       randomStacks[index] = randomStacks[i];
