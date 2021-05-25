@@ -1,10 +1,10 @@
 package com.johnnyleitrim.cpmp.strategy;
 
+import java.util.List;
+
 import com.johnnyleitrim.cpmp.Random;
 import com.johnnyleitrim.cpmp.ls.Neighbour;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import com.johnnyleitrim.cpmp.utils.LargestValueItems;
 
 public class BestNeighbourTieBreakingStrategies {
 
@@ -16,19 +16,40 @@ public class BestNeighbourTieBreakingStrategies {
     }
   };
 
-  public static final BestNeighbourTieBreakingStrategy HIGHEST_CONTAINER = new Strategy("Highest Container") {
+  public static final BestNeighbourTieBreakingStrategy HIGHEST_LAST_CONTAINER = new Strategy("Highest Last Container") {
 
     @Override
     public Neighbour getBestNeighbour(List<Neighbour> neighbours) {
-      neighbours.sort(Comparator.comparingInt(Neighbour::getSumContainerGroups).reversed());
-      List<Neighbour> bestNeighbours = new ArrayList<>(neighbours.size());
-      int highestContainer = neighbours.get(0).getSumContainerGroups();
+      LargestValueItems<Neighbour> bestNeighbours = new LargestValueItems<>(neighbours.size());
       for (Neighbour neighbour : neighbours) {
-        if (neighbour.getSumContainerGroups() == highestContainer) {
-          bestNeighbours.add(neighbour);
-        }
+        bestNeighbours.add(getLastMovedContainer(neighbour), neighbour);
       }
-      return Random.getRandomItem(bestNeighbours);
+      return Random.getRandomItem(bestNeighbours.getItems());
+    }
+
+    private int getLastMovedContainer(Neighbour neighbour) {
+      Neighbour.Containers[] movedContainers = neighbour.getMovedContainers();
+      return movedContainers[movedContainers.length - 1].getMoved();
+    }
+  };
+
+  public static final BestNeighbourTieBreakingStrategy SMALLEST_CONTAINER_DIFFERENCE = new Strategy("Smallest Container Difference") {
+
+    @Override
+    public Neighbour getBestNeighbour(List<Neighbour> neighbours) {
+      LargestValueItems<Neighbour> bestNeighbours = new LargestValueItems<>(neighbours.size());
+      for (Neighbour neighbour : neighbours) {
+        bestNeighbours.add(-getContainerDifference(neighbour), neighbour);
+      }
+      return Random.getRandomItem(bestNeighbours.getItems());
+    }
+
+    private int getContainerDifference(Neighbour neighbour) {
+      int diff = 0;
+      for (Neighbour.Containers movedContainers : neighbour.getMovedContainers()) {
+        diff += movedContainers.getOverlaid() - movedContainers.getMoved();
+      }
+      return diff;
     }
   };
 
@@ -37,4 +58,5 @@ public class BestNeighbourTieBreakingStrategies {
       super(name);
     }
   }
+
 }

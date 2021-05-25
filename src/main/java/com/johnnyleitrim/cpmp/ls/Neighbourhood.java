@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import com.johnnyleitrim.cpmp.Problem;
 import com.johnnyleitrim.cpmp.fitness.FitnessAlgorithm;
 import com.johnnyleitrim.cpmp.state.InvalidMoveException;
 import com.johnnyleitrim.cpmp.state.MutableState;
@@ -62,15 +63,24 @@ public class Neighbourhood implements Iterable<Neighbour>, Iterator<Neighbour> {
   @Override
   public Neighbour next() {
     Move[] moves = new Move[nMoves];
-    int[] movedContainers = new int[nMoves];
+    Neighbour.Containers[] movedContainers = new Neighbour.Containers[nMoves];
     int lastLevel = nMoves - 1;
     for (int level = 0; level < lastLevel; level++) {
       moves[level] = moveLevels.get(level).peek();
-      movedContainers[lastLevel] = currentState.getTopGroup(moves[level].getDstStack());
+      int dstStack = moves[level].getDstStack();
+      int dstStackHeight = currentState.getHeight(dstStack);
+      int movedContainer = currentState.getTopGroup(dstStack);
+      int overlaidContainer = Problem.EMPTY;
+      if (dstStackHeight > 1) {
+        overlaidContainer = currentState.getGroup(dstStack, dstStackHeight - 1);
+      }
+      movedContainers[level] = new Neighbour.Containers(movedContainer, overlaidContainer);
     }
     Move lastMove = moveLevels.get(lastLevel).remove();
     moves[lastLevel] = lastMove;
-    movedContainers[lastLevel] = currentState.getTopGroup(lastMove.getSrcStack());
+    int movedContainer = currentState.getTopGroup(lastMove.getSrcStack());
+    int overlaidContainer = currentState.getTopGroup(lastMove.getDstStack());
+    movedContainers[lastLevel] = new Neighbour.Containers(movedContainer, overlaidContainer);
     applyMove(lastMove);
     int fitness = fitnessAlgorithm.calculateFitness(currentState);
     undoMove(lastMove);

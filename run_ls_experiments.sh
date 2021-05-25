@@ -28,7 +28,6 @@ while [ $current_bf_start -lt $NUM_BF_CATEGORIES ]; do
   fi
 
   BF_PARAMS="-bfStart $current_bf_start -bfEnd $current_bf_end"
-  echo "$PARAMS $BF_PARAMS"
-  # $CMD -Dexec.args="$PARAMS $BF_PARAMS" 2>&1 | tee ${OUTPUT_DIR}/EXP_LS_$$_BF_${current_bf_start}_${current_bf_end}.log &
+  $CMD -Dexec.args="$PARAMS $BF_PARAMS" 2>&1 | tee ${OUTPUT_DIR}/EXP_LS_$$_BF_${current_bf_start}_${current_bf_end}.log &
   current_bf_start=$((current_bf_start + BF_CATEGORIES_PER_EXPERIMENT))
 done

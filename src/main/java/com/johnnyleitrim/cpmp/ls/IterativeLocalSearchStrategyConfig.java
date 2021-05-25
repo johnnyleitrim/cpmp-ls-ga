@@ -25,7 +25,7 @@ public class IterativeLocalSearchStrategyConfig {
 
   private ClearStackSelectionStrategy clearStackSelectionStrategy = ClearStackSelectionStrategies.RANDOM_STACK;
 
-  private BestNeighbourTieBreakingStrategy bestNeighbourTieBreakingStrategy = BestNeighbourTieBreakingStrategies.HIGHEST_CONTAINER;
+  private BestNeighbourTieBreakingStrategy bestNeighbourTieBreakingStrategy = BestNeighbourTieBreakingStrategies.HIGHEST_LAST_CONTAINER;
 
   private boolean fillStackAfterClearing = false;
 

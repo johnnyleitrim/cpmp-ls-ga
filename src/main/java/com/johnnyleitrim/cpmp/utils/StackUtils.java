@@ -1,15 +1,16 @@
 package com.johnnyleitrim.cpmp.utils;
 
-import com.johnnyleitrim.cpmp.ls.Move;
-import com.johnnyleitrim.cpmp.state.MutableState;
-import com.johnnyleitrim.cpmp.state.State;
-import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
-import com.johnnyleitrim.cpmp.strategy.StackFillingStrategy;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+
+import com.johnnyleitrim.cpmp.ls.Move;
+import com.johnnyleitrim.cpmp.state.MutableState;
+import com.johnnyleitrim.cpmp.state.State;
+import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
+import com.johnnyleitrim.cpmp.strategy.StackFillingStrategy;
 
 public class StackUtils {
 
@@ -60,20 +61,13 @@ public class StackUtils {
 
   public static List<Integer> getLowestStacks(State state, Predicate<Integer> stackFilter) {
     int nStacks = state.getNumberOfStacks();
-    int lowestStackHeight = Integer.MAX_VALUE;
-    List<Integer> lowestStacks = new ArrayList<>(nStacks);
+    int nTiers = state.getNumberOfTiers();
+    LargestValueItems<Integer> lowestStacks = new LargestValueItems<>(nStacks);
     for (int stack = 0; stack < nStacks; stack++) {
       if (stackFilter.test(stack)) {
-        int stackHeight = state.getHeight(stack);
-        if (stackHeight < lowestStackHeight) {
-          lowestStackHeight = stackHeight;
-          lowestStacks.clear();
-          lowestStacks.add(stack);
-        } else if (stackHeight == lowestStackHeight) {
-          lowestStacks.add(stack);
-        }
+        lowestStacks.add(nTiers - state.getHeight(stack), stack);
       }
     }
-    return lowestStacks;
+    return lowestStacks.getItems();
   }
 }

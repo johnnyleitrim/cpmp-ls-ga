@@ -1,5 +1,16 @@
 package com.johnnyleitrim.cpmp.ui;
 
+import java.awt.GridLayout;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
 import com.johnnyleitrim.cpmp.ls.IterativeLocalSearchStrategyConfig;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategies;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategy;
@@ -10,15 +21,6 @@ import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategies;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategy;
 import com.johnnyleitrim.cpmp.strategy.Strategy;
-import java.awt.GridLayout;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 public class StrategyConfigPanel extends JPanel {
 
@@ -41,8 +43,9 @@ public class StrategyConfigPanel extends JPanel {
     addIntegerField(localSearchConfig, "Maximum search moves:", strategyConfig::getMaxSearchMoves, strategyConfig::setMaxSearchMoves);
 
     addStrategyField(localSearchConfig, "Neighbour Tie Breaking Strategy:", strategyConfig::getBestNeighbourTieBreakingStrategy, strategyConfig::setBestNeighbourTieBreakingStrategy, new BestNeighbourTieBreakingStrategy[]{
-      BestNeighbourTieBreakingStrategies.RANDOM,
-      BestNeighbourTieBreakingStrategies.HIGHEST_CONTAINER,
+        BestNeighbourTieBreakingStrategies.RANDOM,
+        BestNeighbourTieBreakingStrategies.HIGHEST_LAST_CONTAINER,
+        BestNeighbourTieBreakingStrategies.SMALLEST_CONTAINER_DIFFERENCE,
     });
 
     return localSearchConfig;
@@ -54,21 +57,21 @@ public class StrategyConfigPanel extends JPanel {
     perturbationConfig.setLayout(new GridLayout(4, 2, 10, 10));
 
     addStrategyField(perturbationConfig, "Clear Stack Selection Strategy:", strategyConfig::getClearStackSelectionStrategy, strategyConfig::setClearStackSelectionStrategy, new ClearStackSelectionStrategy[]{
-      ClearStackSelectionStrategies.RANDOM_STACK,
-      ClearStackSelectionStrategies.LOWEST_STACK,
-      ClearStackSelectionStrategies.LOWEST_MIS_OVERLAID_STACK,
+        ClearStackSelectionStrategies.RANDOM_STACK,
+        ClearStackSelectionStrategies.LOWEST_STACK,
+        ClearStackSelectionStrategies.LOWEST_MIS_OVERLAID_STACK,
     });
 
     addStrategyField(perturbationConfig, "Stack Clearing Strategy:", strategyConfig::getClearStackStrategy, strategyConfig::setClearStackStrategy, new StackClearingStrategy[]{
-      StackClearingStrategies.RANDOM,
-      StackClearingStrategies.CLEAR_TO_BEST,
+        StackClearingStrategies.RANDOM,
+        StackClearingStrategies.CLEAR_TO_BEST,
     });
 
     addBooleanField(perturbationConfig, "Fill Stack after Clearing:", strategyConfig::isFillStackAfterClearing, strategyConfig::setFillStackAfterClearing);
 
     addStrategyField(perturbationConfig, "Stack Filling Strategy:", strategyConfig::getFillStackStrategy, strategyConfig::setFillStackStrategy, new StackFillingStrategy[]{
-      StackFillingStrategies.LARGEST_CONTAINER,
-      StackFillingStrategies.LARGEST_MIS_OVERLAID_CONTAINER,
+        StackFillingStrategies.LARGEST_CONTAINER,
+        StackFillingStrategies.LARGEST_MIS_OVERLAID_CONTAINER,
     });
 
     return perturbationConfig;
@@ -76,12 +79,12 @@ public class StrategyConfigPanel extends JPanel {
 
   private void addIntegerField(JPanel parent, String fieldName, Supplier<Integer> getter, Consumer<Integer> setter) {
     JLabel fieldLabel = new JLabel(fieldName, SwingConstants.RIGHT);
-    JComboBox<Integer> fieldComboBox = new JComboBox<Integer>(new Integer[]{1, 2, 3});
+    JComboBox<Integer> fieldComboBox = new JComboBox<>(new Integer[]{1, 2, 3});
     fieldLabel.setLabelFor(fieldComboBox);
 
     fieldComboBox.setSelectedItem(getter.get());
     fieldComboBox.addActionListener(e -> {
-      JComboBox cb = (JComboBox) e.getSource();
+      JComboBox<Integer> cb = (JComboBox<Integer>) e.getSource();
       setter.accept((Integer) cb.getSelectedItem());
     });
     parent.add(fieldLabel);
@@ -101,13 +104,13 @@ public class StrategyConfigPanel extends JPanel {
 
   private <T extends Strategy> void addStrategyField(JPanel parent, String fieldName, Supplier<Strategy> getter, Consumer<T> setter, T[] strategies) {
     JLabel fieldLabel = new JLabel(fieldName, SwingConstants.RIGHT);
-    JComboBox<T> fieldComboBox = new JComboBox<T>(strategies);
+    JComboBox<T> fieldComboBox = new JComboBox<>(strategies);
     fieldLabel.setLabelFor(fieldComboBox);
 
     fieldComboBox.setSelectedItem(getter.get());
     fieldComboBox.addActionListener(e -> {
-      JComboBox cb = (JComboBox) e.getSource();
-      setter.accept((T) cb.getSelectedItem());
+      JComboBox<T> cb = (JComboBox<T>) e.getSource();
+      setter.accept(cb.getItemAt(cb.getSelectedIndex()));
     });
     parent.add(fieldLabel);
     parent.add(fieldComboBox);

@@ -2,31 +2,42 @@ package com.johnnyleitrim.cpmp.ls;
 
 public class Neighbour {
   private final int cost;
-  private final int[] movedContainer;
+  private final Containers[] movedContainers;
   private final Move[] moves;
-  private final int sumContainerGroups;
 
-  public Neighbour(int cost, int[] movedContainer, Move[] moves) {
-    this.movedContainer = movedContainer;
+  public Neighbour(int cost, Containers[] movedContainers, Move[] moves) {
+    this.movedContainers = movedContainers;
     this.moves = moves;
     this.cost = cost;
-    sumContainerGroups = movedContainer[movedContainer.length - 1]; // IntStream.of(movedContainer).sum();
   }
 
   public int getCost() {
     return cost;
   }
 
-  public int[] getMovedContainer() {
-    return movedContainer;
-  }
-
-  public int getSumContainerGroups() {
-    return sumContainerGroups;
-  }
-
   public Move[] getMoves() {
     return moves;
   }
 
+  public Containers[] getMovedContainers() {
+    return movedContainers;
+  }
+
+  public static class Containers {
+    private final int moved;
+    private final int overlaid;
+
+    public Containers(int moved, int overlaid) {
+      this.moved = moved;
+      this.overlaid = overlaid;
+    }
+
+    public int getMoved() {
+      return moved;
+    }
+
+    public int getOverlaid() {
+      return overlaid;
+    }
+  }
 }
