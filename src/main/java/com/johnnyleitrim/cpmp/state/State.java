@@ -22,10 +22,6 @@ public class State {
 
   private final SortedSet<Integer> groups;
 
-  private final String groupFormat;
-
-  private final char[] emptyBay;
-
   public State(int[][] state, int nStacks, int nTiers) {
     this(flattenState(state), nStacks, nTiers);
   }
@@ -43,16 +39,11 @@ public class State {
 
     groups = new TreeSet<>(Comparator.reverseOrder());
 
-    int longestGroup = 0;
     for (int group : state) {
       if (group != Problem.EMPTY) {
         groups.add(group);
-        longestGroup = Math.max(longestGroup, (int) (Math.log10(group) + 1));
       }
     }
-    groupFormat = "%" + longestGroup + "d";
-    emptyBay = new char[longestGroup];
-    Arrays.fill(emptyBay, ' ');
   }
 
   private static int[] flattenState(int[][] state) {
@@ -139,6 +130,11 @@ public class State {
 
   @Override
   public String toString() {
+    int longestGroup = (int) (Math.log10(groups.size()) + 1);
+    String groupFormat = "%" + longestGroup + "d";
+    char[] emptyBay = new char[longestGroup];
+    Arrays.fill(emptyBay, ' ');
+
     StringBuilder str = new StringBuilder();
     for (int tier = nTiers - 1; tier >= 0; tier--) {
       str.append("|");

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -37,7 +38,7 @@ public class SolverPanel extends JPanel {
   private final State initialState;
 
   private List<State> problemStates;
-  private int currentProblemState = 0;
+  private int currentStateIndex = 0;
 
   public SolverPanel(State initialState, IterativeLocalSearchStrategyConfig strategyConfig) {
     statePanel = new StatePanel(initialState);
@@ -57,25 +58,10 @@ public class SolverPanel extends JPanel {
     statusLine.setBorder(new BevelBorder(BevelBorder.LOWERED));
     add(statusLine, BorderLayout.SOUTH);
 
-    statePanel.registerKeyboardAction((e) -> {
-          if (problemStates != null) {
-            currentProblemState = Math.min(currentProblemState + 1, problemStates.size() - 1);
-            showState(currentProblemState);
-          }
-        },
-        "Next Move",
-        KeyStroke.getKeyStroke("RIGHT"),
-        JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-    statePanel.registerKeyboardAction((e) -> {
-          if (problemStates != null) {
-            currentProblemState = Math.max(currentProblemState - 1, 0);
-            showState(currentProblemState);
-          }
-        },
-        "Previous Move",
-        KeyStroke.getKeyStroke("LEFT"),
-        JComponent.WHEN_IN_FOCUSED_WINDOW);
+    addKeyboardAction("RIGHT", () -> Math.min(currentStateIndex + 1, problemStates.size() - 1));
+    addKeyboardAction("LEFT", () -> Math.max(currentStateIndex - 1, 0));
+    addKeyboardAction("UP", () -> problemStates.size() - 1);
+    addKeyboardAction("DOWN", () -> 0);
 
     int fitness = FITNESS.calculateFitness(initialState);
     statusLine.setText(String.format("Fitness: %d", fitness));
@@ -111,11 +97,23 @@ public class SolverPanel extends JPanel {
           LOGGER.error("Problem finding solution", e);
         }
       }
-      currentProblemState = 0;
+      currentStateIndex = 0;
       statePanel.setState(initialState);
       statusLine.setText(String.format("Solved in %d moves", problemStates.size() - 1));
       solveButton.setText("Solve");
     });
     solver.start();
+  }
+
+  private void addKeyboardAction(String keyStroke, Supplier<Integer> indexSupplier) {
+    statePanel.registerKeyboardAction((e) -> {
+          if (problemStates != null) {
+            currentStateIndex = indexSupplier.get();
+            showState(currentStateIndex);
+          }
+        },
+        keyStroke,
+        KeyStroke.getKeyStroke(keyStroke),
+        JComponent.WHEN_IN_FOCUSED_WINDOW);
   }
 }

@@ -32,8 +32,8 @@ public class Main {
     IterativeLocalSearchStrategyConfig strategyConfig = new IterativeLocalSearchStrategyConfig();
 
     CommandOptions commandOptions = new CommandOptions(args);
-    commandOptions.getIntArg("minSearchMoves").ifPresent(strategyConfig::setMinSearchMoves);
-    commandOptions.getIntArg("maxSearchMoves").ifPresent(strategyConfig::setMaxSearchMoves);
+    commandOptions.getIntArg("-minSearchMoves").ifPresent(strategyConfig::setMinSearchMoves);
+    commandOptions.getIntArg("-maxSearchMoves").ifPresent(strategyConfig::setMaxSearchMoves);
     commandOptions.getIntArg("-maxSearchDuration").ifPresent(duration -> strategyConfig.setMaxSearchDuration(Duration.ofMinutes(duration)));
     commandOptions.getArg("-clearStackSelectionStrategy").ifPresent(strategy -> strategyConfig.setClearStackSelectionStrategy(
         getStrategy(strategy, ClearStackSelectionStrategies.class, ClearStackSelectionStrategy.class)));
@@ -52,14 +52,21 @@ public class Main {
     int maxSolutions = commandOptions.getIntArg("-maxSolutions").orElse(-1);
 
     LOGGER.info(":::::::::::::::::::::::::::::::::::::");
-    LOGGER.info(":           Base Seed: {}", baseSeed);
-    LOGGER.info(":                Runs: {}", runs);
-    LOGGER.info(":   Start BF Category: {}", bfStart);
-    LOGGER.info(":     End BF Category: {}", bfEnd);
-    LOGGER.info(":   Maximum Solutions: {}", maxSolutions);
-    LOGGER.info(":    Min Search Moves: {}", strategyConfig.getMinSearchMoves());
-    LOGGER.info(":    Max Search Moves: {}", strategyConfig.getMaxSearchDuration());
-    LOGGER.info(": Max Search Duration: {}", strategyConfig.getMaxSearchDuration());
+    LOGGER.info(":                   Base Seed: {}", baseSeed);
+    LOGGER.info(":                        Runs: {}", runs);
+    LOGGER.info(":           Start BF Category: {}", bfStart);
+    LOGGER.info(":             End BF Category: {}", bfEnd);
+    LOGGER.info(":           Maximum Solutions: {}", maxSolutions);
+    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
+    LOGGER.info(":            Min Search Moves: {}", strategyConfig.getMinSearchMoves());
+    LOGGER.info(":            Max Search Moves: {}", strategyConfig.getMaxSearchMoves());
+    LOGGER.info(":         Max Search Duration: {}", strategyConfig.getMaxSearchDuration());
+    LOGGER.info(": Best Neighbour Tie Breaking: {}", strategyConfig.getBestNeighbourTieBreakingStrategy().getName());
+    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
+    LOGGER.info(":       Clear Stack Selection: {}", strategyConfig.getClearStackSelectionStrategy().getName());
+    LOGGER.info(":        Clear Stack Strategy: {}", strategyConfig.getClearStackStrategy().getName());
+    LOGGER.info(":   Fill Stack After Clearing: {}", strategyConfig.isFillStackAfterClearing());
+    LOGGER.info(":         Fill Stack Strategy: {}", strategyConfig.getFillStackStrategy().getName());
     LOGGER.info(":::::::::::::::::::::::::::::::::::::");
 
     if (!commandOptions.hasArg("-execute")) {
