@@ -6,14 +6,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.johnnyleitrim.cpmp.fitness.NewBFLowerBoundFitness;
 import com.johnnyleitrim.cpmp.state.MutableState;
 import com.johnnyleitrim.cpmp.state.State;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategy;
 import com.johnnyleitrim.cpmp.utils.MoveUtils;
 import com.johnnyleitrim.cpmp.utils.StackUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IterativeLocalSearch {
   private static final Logger LOGGER = LoggerFactory.getLogger(IterativeLocalSearch.class);
@@ -132,7 +132,7 @@ public class IterativeLocalSearch {
     Neighbour bestNeighbour = null;
     List<Neighbour> bestNeighbours = new ArrayList<>(nStacks);
 
-    Neighbourhood neighbourhood = new Neighbourhood(strategyConfig.getFitnessAlgorithm(), state, nSearchMoves);
+    Neighbourhood neighbourhood = new Neighbourhood(strategyConfig.getFitnessStrategy(), state, nSearchMoves);
 
     for (Neighbour neighbour : neighbourhood) {
       if (bestNeighbour == null || neighbour.getCost() < bestNeighbour.getCost()) {
@@ -156,7 +156,14 @@ public class IterativeLocalSearch {
   }
 
   private int calculateFitness(State state) {
-    return strategyConfig.getFitnessAlgorithm().calculateFitness(state);
+    NewBFLowerBoundFitness foo = new NewBFLowerBoundFitness();
+    int fooFit = foo.calculateFitness(state);
+    int fit = strategyConfig.getFitnessStrategy().calculateFitness(state);
+    if (fooFit != fit) {
+      LOGGER.error("Fitness: {} != {}", fooFit, fit);
+      LOGGER.error("State: {}", state);
+    }
+    return fit;
   }
 
   private static class StepResult {

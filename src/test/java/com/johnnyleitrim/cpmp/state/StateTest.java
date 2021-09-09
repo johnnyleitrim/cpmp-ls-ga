@@ -1,11 +1,10 @@
 package com.johnnyleitrim.cpmp.state;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.johnnyleitrim.cpmp.state.State.StackState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.johnnyleitrim.cpmp.state.State.StackState;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StateTest {
 

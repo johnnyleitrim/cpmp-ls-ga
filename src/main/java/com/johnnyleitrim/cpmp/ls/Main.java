@@ -6,9 +6,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.johnnyleitrim.cpmp.CommandOptions;
 import com.johnnyleitrim.cpmp.MathUtil;
 import com.johnnyleitrim.cpmp.Problem;
@@ -19,10 +16,14 @@ import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategies;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategy;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategies;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategy;
+import com.johnnyleitrim.cpmp.strategy.FitnessStrategies;
+import com.johnnyleitrim.cpmp.strategy.FitnessStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackClearingStrategies;
 import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategies;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
 
@@ -44,6 +45,8 @@ public class Main {
         getStrategy(strategy, StackFillingStrategies.class, StackFillingStrategy.class)));
     commandOptions.getArg("-clearStackStrategy").ifPresent(strategy -> strategyConfig.setClearStackStrategy(
         getStrategy(strategy, StackClearingStrategies.class, StackClearingStrategy.class)));
+    commandOptions.getArg("-fitnessStrategy").ifPresent(strategy -> strategyConfig.setFitnessStrategy(
+        getStrategy(strategy, FitnessStrategies.class, FitnessStrategy.class)));
 
     long baseSeed = commandOptions.getLongArg("-seed").orElse(System.currentTimeMillis());
     int runs = commandOptions.getIntArg("-runs").orElse(10);

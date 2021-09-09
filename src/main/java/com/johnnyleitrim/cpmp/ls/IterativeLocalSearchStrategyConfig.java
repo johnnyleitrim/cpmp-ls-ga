@@ -2,12 +2,12 @@ package com.johnnyleitrim.cpmp.ls;
 
 import java.time.Duration;
 
-import com.johnnyleitrim.cpmp.fitness.BFLowerBoundFitness;
-import com.johnnyleitrim.cpmp.fitness.FitnessAlgorithm;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategies;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategy;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategies;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategy;
+import com.johnnyleitrim.cpmp.strategy.FitnessStrategies;
+import com.johnnyleitrim.cpmp.strategy.FitnessStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackClearingStrategies;
 import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategies;
@@ -19,7 +19,7 @@ public class IterativeLocalSearchStrategyConfig {
 
   private int maxSearchMoves = 2;
 
-  private FitnessAlgorithm fitnessAlgorithm = new BFLowerBoundFitness();
+  private FitnessStrategy fitnessStrategy = FitnessStrategies.ORIGINAL;
 
   private Duration maxSearchDuration = Duration.ofMinutes(1);
 
@@ -49,12 +49,12 @@ public class IterativeLocalSearchStrategyConfig {
     this.maxSearchMoves = maxSearchMoves;
   }
 
-  public FitnessAlgorithm getFitnessAlgorithm() {
-    return fitnessAlgorithm;
+  public FitnessStrategy getFitnessStrategy() {
+    return fitnessStrategy;
   }
 
-  public void setFitnessAlgorithm(FitnessAlgorithm fitnessAlgorithm) {
-    this.fitnessAlgorithm = fitnessAlgorithm;
+  public void setFitnessStrategy(FitnessStrategy fitnessStrategy) {
+    this.fitnessStrategy = fitnessStrategy;
   }
 
   public Duration getMaxSearchDuration() {

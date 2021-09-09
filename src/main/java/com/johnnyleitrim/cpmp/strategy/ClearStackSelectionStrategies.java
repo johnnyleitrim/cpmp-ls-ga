@@ -1,11 +1,12 @@
 package com.johnnyleitrim.cpmp.strategy;
 
+import java.util.List;
+import java.util.OptionalInt;
+
 import com.johnnyleitrim.cpmp.Random;
 import com.johnnyleitrim.cpmp.random.RandomStackGenerator;
 import com.johnnyleitrim.cpmp.state.MutableState;
 import com.johnnyleitrim.cpmp.utils.StackUtils;
-import java.util.List;
-import java.util.OptionalInt;
 
 public class ClearStackSelectionStrategies {
 

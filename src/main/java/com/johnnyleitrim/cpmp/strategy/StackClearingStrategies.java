@@ -1,11 +1,12 @@
 package com.johnnyleitrim.cpmp.strategy;
 
-import com.johnnyleitrim.cpmp.Random;
-import com.johnnyleitrim.cpmp.state.State;
-import com.johnnyleitrim.cpmp.utils.StackUtils;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+
+import com.johnnyleitrim.cpmp.Random;
+import com.johnnyleitrim.cpmp.state.State;
+import com.johnnyleitrim.cpmp.utils.StackUtils;
 
 public class StackClearingStrategies {
 

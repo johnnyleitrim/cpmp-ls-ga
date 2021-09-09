@@ -104,6 +104,8 @@ public class BFLowerBoundFitness implements FitnessAlgorithm {
           } else {
             highestWellPlacedGroup[stack] = new StackPosition(tier + 1, priorityGroup);
           }
+        } else {
+          break;
         }
       }
       nb += nbStack;

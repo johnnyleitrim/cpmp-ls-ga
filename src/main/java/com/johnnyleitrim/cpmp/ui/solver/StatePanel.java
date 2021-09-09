@@ -1,9 +1,8 @@
 package com.johnnyleitrim.cpmp.ui.solver;
 
+import javax.swing.JPanel;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-
-import javax.swing.JPanel;
 
 import com.johnnyleitrim.cpmp.state.State;
 

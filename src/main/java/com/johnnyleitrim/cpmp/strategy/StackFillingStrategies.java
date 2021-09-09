@@ -1,9 +1,10 @@
 package com.johnnyleitrim.cpmp.strategy;
 
-import com.johnnyleitrim.cpmp.Problem;
-import com.johnnyleitrim.cpmp.state.State;
 import java.util.Optional;
 import java.util.function.Predicate;
+
+import com.johnnyleitrim.cpmp.Problem;
+import com.johnnyleitrim.cpmp.state.State;
 
 public class StackFillingStrategies {
 

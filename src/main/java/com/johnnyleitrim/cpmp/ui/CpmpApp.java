@@ -1,18 +1,5 @@
 package com.johnnyleitrim.cpmp.ui;
 
-import com.johnnyleitrim.cpmp.Problem;
-import com.johnnyleitrim.cpmp.Random;
-import com.johnnyleitrim.cpmp.ls.IterativeLocalSearchStrategyConfig;
-import com.johnnyleitrim.cpmp.problem.BFProblemReader;
-import com.johnnyleitrim.cpmp.problem.CVProblemReader;
-import com.johnnyleitrim.cpmp.problem.EMMProblemReader;
-import com.johnnyleitrim.cpmp.ui.solver.SolverPanel;
-import java.awt.Dimension;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.function.BiFunction;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -22,6 +9,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.Dimension;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.function.BiFunction;
+
+import com.johnnyleitrim.cpmp.Problem;
+import com.johnnyleitrim.cpmp.Random;
+import com.johnnyleitrim.cpmp.ls.IterativeLocalSearchStrategyConfig;
+import com.johnnyleitrim.cpmp.problem.BFProblemReader;
+import com.johnnyleitrim.cpmp.problem.CVProblemReader;
+import com.johnnyleitrim.cpmp.problem.EMMProblemReader;
+import com.johnnyleitrim.cpmp.ui.solver.SolverPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,18 +31,6 @@ public class CpmpApp {
 
   private final IterativeLocalSearchStrategyConfig strategyConfig = new IterativeLocalSearchStrategyConfig();
   private final JTabbedPane tabbedPane;
-
-  public static void main(String[] args) {
-    try {
-      UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-    } catch (Exception e) {
-      LOGGER.error("Unable to set the look and feel of the app", e);
-    }
-    long seed = System.currentTimeMillis();
-    Random.setRandomSeed(seed);
-    LOGGER.info("Setting solver seed to {}", seed);
-    CpmpApp cpmpApp = new CpmpApp();
-  }
 
   public CpmpApp() {
     JFrame frame = new JFrame("Container Pre-Marshalling Problem");
@@ -73,26 +62,38 @@ public class CpmpApp {
     frame.setVisible(true);
   }
 
+  public static void main(String[] args) {
+    try {
+      UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+    } catch (Exception e) {
+      LOGGER.error("Unable to set the look and feel of the app", e);
+    }
+    long seed = System.currentTimeMillis();
+    Random.setRandomSeed(seed);
+    LOGGER.info("Setting solver seed to {}", seed);
+    CpmpApp cpmpApp = new CpmpApp();
+  }
+
   private void addOpenFileListener(JFrame frame, JMenuItem menuItem, String fileDesc, String fileExt, BiFunction<List<String>, String, Problem> problemReader) {
     menuItem.addActionListener(
-      enterPress -> {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new File("."));
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setFileFilter(new FileNameExtensionFilter(fileDesc, fileExt));
-        if (chooser.showOpenDialog(frame) == JFileChooser.OPEN_DIALOG) {
-          File file = chooser.getSelectedFile();
-          try {
-            List<String> lines = Files.readAllLines(Paths.get(file.toURI()));
-            Problem problem = problemReader.apply(lines, file.getName());
-            SolverPanel solverPanel = new SolverPanel(problem.getInitialState(), strategyConfig);
-            tabbedPane.add(problem.getName(), solverPanel);
-            tabbedPane.setSelectedComponent(solverPanel);
-          } catch (Exception e) {
-            LOGGER.error("Error opening file {}", file.getName(), e);
-            JOptionPane.showMessageDialog(frame, "Cannot open file: " + e.getMessage());
+        enterPress -> {
+          JFileChooser chooser = new JFileChooser();
+          chooser.setCurrentDirectory(new File("."));
+          chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+          chooser.setFileFilter(new FileNameExtensionFilter(fileDesc, fileExt));
+          if (chooser.showOpenDialog(frame) == JFileChooser.OPEN_DIALOG) {
+            File file = chooser.getSelectedFile();
+            try {
+              List<String> lines = Files.readAllLines(Paths.get(file.toURI()));
+              Problem problem = problemReader.apply(lines, file.getName());
+              SolverPanel solverPanel = new SolverPanel(problem.getInitialState(), strategyConfig);
+              tabbedPane.add(problem.getName(), solverPanel);
+              tabbedPane.setSelectedComponent(solverPanel);
+            } catch (Exception e) {
+              LOGGER.error("Error opening file {}", file.getName(), e);
+              JOptionPane.showMessageDialog(frame, "Cannot open file: " + e.getMessage());
+            }
           }
-        }
-      });
+        });
   }
 }
