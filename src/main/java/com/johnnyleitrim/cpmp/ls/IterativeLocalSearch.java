@@ -156,14 +156,7 @@ public class IterativeLocalSearch {
   }
 
   private int calculateFitness(State state) {
-    NewBFLowerBoundFitness foo = new NewBFLowerBoundFitness();
-    int fooFit = foo.calculateFitness(state);
-    int fit = strategyConfig.getFitnessStrategy().calculateFitness(state);
-    if (fooFit != fit) {
-      LOGGER.error("Fitness: {} != {}", fooFit, fit);
-      LOGGER.error("State: {}", state);
-    }
-    return fit;
+    return strategyConfig.getFitnessStrategy().calculateFitness(state);
   }
 
   private static class StepResult {

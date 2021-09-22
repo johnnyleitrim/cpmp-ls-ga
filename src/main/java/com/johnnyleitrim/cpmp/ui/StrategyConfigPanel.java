@@ -49,7 +49,7 @@ public class StrategyConfigPanel extends JPanel {
         BestNeighbourTieBreakingStrategies.SMALLEST_CONTAINER_DIFFERENCE,
     });
 
-    addStrategyField(localSearchConfig, "Neighbour Tie Breaking Strategy:", strategyConfig::getFitnessStrategy, strategyConfig::setFitnessStrategy, new FitnessStrategy[]{
+    addStrategyField(localSearchConfig, "Fitness Strategy:", strategyConfig::getFitnessStrategy, strategyConfig::setFitnessStrategy, new FitnessStrategy[]{
         FitnessStrategies.ORIGINAL,
         FitnessStrategies.NEW
     });
