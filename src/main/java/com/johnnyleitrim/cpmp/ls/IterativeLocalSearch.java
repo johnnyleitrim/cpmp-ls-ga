@@ -2,18 +2,19 @@ package com.johnnyleitrim.cpmp.ls;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.johnnyleitrim.cpmp.state.MutableState;
 import com.johnnyleitrim.cpmp.state.State;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategy;
 import com.johnnyleitrim.cpmp.utils.MoveUtils;
 import com.johnnyleitrim.cpmp.utils.StackUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IterativeLocalSearch {
   private static final Logger LOGGER = LoggerFactory.getLogger(IterativeLocalSearch.class);
@@ -67,6 +68,7 @@ public class IterativeLocalSearch {
         LOGGER.debug("Found solution in {} moves", moves.size());
         solutionCount++;
         moves = removeTransientMoves(moves, state.getNumberOfStacks());
+        printDuplicateStates(initialState, moves);
         bestSolution = getBestSolution(bestSolution, moves);
       } else {
         LOGGER.debug("No solution found");
@@ -82,6 +84,22 @@ public class IterativeLocalSearch {
       LOGGER.info("Removed {} transient moves", nMovesBeforeRemoval - moves.size());
     }
     return moves;
+  }
+
+  private void printDuplicateStates(State initialState, List<Move> moves) {
+    Map<State, Integer> states = new HashMap<>(moves.size() + 1);
+    states.put(initialState, 0);
+    MutableState currentState = initialState.copy();
+    for (int i = 1; i < moves.size(); i++) {
+      Move move = moves.get(i - 1);
+      MoveUtils.applyMove(currentState, move.getSrcStack(), move.getDstStack());
+      if (states.containsKey(currentState)) {
+        int initialLocation = states.get(currentState);
+        LOGGER.warn("Found a duplicate state, distance is {}", i - initialLocation);
+      } else {
+        states.put(currentState.copy(), i);
+      }
+    }
   }
 
   private Optional<List<Move>> getBestSolution(Optional<List<Move>> currentBest, List<Move> moves) {
@@ -132,7 +150,7 @@ public class IterativeLocalSearch {
     Neighbour bestNeighbour = null;
     List<Neighbour> bestNeighbours = new ArrayList<>(nStacks);
 
-    Neighbourhood neighbourhood = new Neighbourhood(strategyConfig.getFitnessAlgorithm(), state, nSearchMoves);
+    Neighbourhood neighbourhood = new Neighbourhood(strategyConfig.getFitnessStrategy(), state, nSearchMoves);
 
     for (Neighbour neighbour : neighbourhood) {
       if (bestNeighbour == null || neighbour.getCost() < bestNeighbour.getCost()) {
@@ -156,7 +174,7 @@ public class IterativeLocalSearch {
   }
 
   private int calculateFitness(State state) {
-    return strategyConfig.getFitnessAlgorithm().calculateFitness(state);
+    return strategyConfig.getFitnessStrategy().calculateFitness(state);
   }
 
   private static class StepResult {

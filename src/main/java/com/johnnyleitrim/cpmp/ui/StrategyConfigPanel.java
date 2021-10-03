@@ -1,21 +1,22 @@
 package com.johnnyleitrim.cpmp.ui;
 
-import java.awt.GridLayout;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import java.awt.GridLayout;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.johnnyleitrim.cpmp.ls.IterativeLocalSearchStrategyConfig;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategies;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategy;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategies;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategy;
+import com.johnnyleitrim.cpmp.strategy.FitnessStrategies;
+import com.johnnyleitrim.cpmp.strategy.FitnessStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackClearingStrategies;
 import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategies;
@@ -37,7 +38,7 @@ public class StrategyConfigPanel extends JPanel {
   private JPanel addLocalSearchConfigPanel() {
     JPanel localSearchConfig = new JPanel();
     localSearchConfig.setBorder(BorderFactory.createTitledBorder("Local Search"));
-    localSearchConfig.setLayout(new GridLayout(3, 2, 10, 10));
+    localSearchConfig.setLayout(new GridLayout(4, 2, 10, 10));
 
     addIntegerField(localSearchConfig, "Minimum search moves:", strategyConfig::getMinSearchMoves, strategyConfig::setMinSearchMoves);
     addIntegerField(localSearchConfig, "Maximum search moves:", strategyConfig::getMaxSearchMoves, strategyConfig::setMaxSearchMoves);
@@ -46,6 +47,11 @@ public class StrategyConfigPanel extends JPanel {
         BestNeighbourTieBreakingStrategies.RANDOM,
         BestNeighbourTieBreakingStrategies.HIGHEST_LAST_CONTAINER,
         BestNeighbourTieBreakingStrategies.SMALLEST_CONTAINER_DIFFERENCE,
+    });
+
+    addStrategyField(localSearchConfig, "Fitness Strategy:", strategyConfig::getFitnessStrategy, strategyConfig::setFitnessStrategy, new FitnessStrategy[]{
+        FitnessStrategies.ORIGINAL,
+        FitnessStrategies.NEW
     });
 
     return localSearchConfig;

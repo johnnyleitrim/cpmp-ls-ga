@@ -1,9 +1,10 @@
 #!/bin/sh
 
 CMD="mvn exec:java@iterated-local-search"
-LOCAL_SEARCH_PARAMS="-minSearchMoves 1 -maxSearchMoves 2 -maxSearchDuration 1 -bestNeighbourTieBreakingStrategy HIGHEST_CONTAINER"
+FITNESS_STRATEGY="$@"
+LOCAL_SEARCH_PARAMS="-minSearchMoves 1 -maxSearchMoves 2 -maxSearchDuration 1 -bestNeighbourTieBreakingStrategy HIGHEST_LAST_CONTAINER -fitnessStrategy $FITNESS_STRATEGY"
 PERTURBATION_PARAMS="-clearStackSelectionStrategy LOWEST_MIS_OVERLAID_STACK -clearStackStrategy CLEAR_TO_BEST -fillStackAfterClearing false"
-PARAMS="-seed 12345 -runs 1 -maxSolutions 10 $LOCAL_SEARCH_PARAMS $PERTURBATION_PARAMS"
+PARAMS="-seed 12345 -runs 1 -maxSolutions 10 -execute $LOCAL_SEARCH_PARAMS $PERTURBATION_PARAMS"
 
 NUM_BF_CATEGORIES=32
 NUM_CONCURRENT_EXPERIMENTS=3
@@ -28,6 +29,6 @@ while [ $current_bf_start -lt $NUM_BF_CATEGORIES ]; do
   fi
 
   BF_PARAMS="-bfStart $current_bf_start -bfEnd $current_bf_end"
-  $CMD -Dexec.args="$PARAMS $BF_PARAMS" 2>&1 | tee ${OUTPUT_DIR}/EXP_LS_$$_BF_${current_bf_start}_${current_bf_end}.log &
+  $CMD -Dexec.args="$PARAMS $BF_PARAMS" 2>&1 | tee ${OUTPUT_DIR}/EXP_LS_$$_BF_${current_bf_start}_${current_bf_end}_${FITNESS_STRATEGY}.log &
   current_bf_start=$((current_bf_start + BF_CATEGORIES_PER_EXPERIMENT))
 done

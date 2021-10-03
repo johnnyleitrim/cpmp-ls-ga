@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BFLowerBoundFitnessTest {
+public class NewBFLowerBoundFitnessTest {
 
-  private final FitnessAlgorithm fitnessAlgorithm = new BFLowerBoundFitness();
+  private final FitnessAlgorithm fitnessAlgorithm = new NewBFLowerBoundFitness();
 
   @Test
   public void test1() {
@@ -54,6 +54,7 @@ public class BFLowerBoundFitnessTest {
     int actualFitness = fitnessAlgorithm.calculateFitness(state);
     assertThat(actualFitness).isEqualTo(14);
   }
+
 
   @Test
   public void test4() {

@@ -1,5 +1,12 @@
 package com.johnnyleitrim.cpmp.ui.solver;
 
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,21 +15,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.johnnyleitrim.cpmp.fitness.BFLowerBoundFitness;
 import com.johnnyleitrim.cpmp.ls.IterativeLocalSearch;
 import com.johnnyleitrim.cpmp.ls.IterativeLocalSearchStrategyConfig;
 import com.johnnyleitrim.cpmp.state.State;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SolverPanel extends JPanel {
 

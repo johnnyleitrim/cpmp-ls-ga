@@ -1,14 +1,13 @@
 package com.johnnyleitrim.cpmp.utils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.List;
-
-import org.junit.jupiter.api.Test;
 
 import com.johnnyleitrim.cpmp.state.MutableState;
 import com.johnnyleitrim.cpmp.state.State;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategies;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StackUtilsTest {
 

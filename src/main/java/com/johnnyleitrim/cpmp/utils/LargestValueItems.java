@@ -6,9 +6,8 @@ import java.util.OptionalInt;
 
 public class LargestValueItems<T> {
 
-  private OptionalInt largestValue = OptionalInt.empty();
-
   private final List<T> items;
+  private OptionalInt largestValue = OptionalInt.empty();
 
   public LargestValueItems(int nValues) {
     items = new ArrayList<>(nValues);

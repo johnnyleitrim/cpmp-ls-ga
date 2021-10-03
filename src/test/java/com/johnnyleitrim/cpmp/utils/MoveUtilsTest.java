@@ -1,13 +1,12 @@
 package com.johnnyleitrim.cpmp.utils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Arrays;
 import java.util.List;
 
+import com.johnnyleitrim.cpmp.ls.Move;
 import org.junit.jupiter.api.Test;
 
-import com.johnnyleitrim.cpmp.ls.Move;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MoveUtilsTest {
 

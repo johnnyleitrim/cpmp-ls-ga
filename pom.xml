@@ -70,15 +70,6 @@
             </configuration>
           </execution>
           <execution>
-            <id>genetic-algorithm</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <configuration>
-              <mainClass>com.johnnyleitrim.cpmp.ga.Main</mainClass>
-            </configuration>
-          </execution>
-          <execution>
             <id>cpmp-app</id>
             <goals>
               <goal>java</goal>
