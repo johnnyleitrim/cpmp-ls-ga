@@ -1,7 +1,6 @@
 package com.johnnyleitrim.cpmp.fitness;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 import com.johnnyleitrim.cpmp.Problem;
@@ -30,10 +29,11 @@ public class NewBFLowerBoundFitness implements FitnessAlgorithm {
       lbStackHasOverstowage[i] = false;
     }
     for (int i = 0; i < bayWidth; i++) {
-      if (state.getGroup(i, 0) == Problem.EMPTY)
+      if (state.getGroup(i, 0) == Problem.EMPTY) {
         empty[i] = true;
-      else
+      } else {
         empty[i] = false;
+      }
     }
     int stackOverstowed;
     int minBadlyPlaced = Integer.MAX_VALUE;
@@ -79,7 +79,6 @@ public class NewBFLowerBoundFitness implements FitnessAlgorithm {
       overstowage += stackOverstowed;
       minBadlyPlaced = Math.min(minBadlyPlaced, stackOverstowed);
     }
-    System.out.println("NBS? " + overstowage);
     overstowage += minBadlyPlaced;
     // Compute the maximum cumulative demand surplus g*
     // Note that D(g) is computed on the fly by accumulating the values in the demand vector
@@ -104,33 +103,25 @@ public class NewBFLowerBoundFitness implements FitnessAlgorithm {
       }
     }
     int nsgx = Math.max(0, (int) Math.ceil(maxCmDmdSup / (double) bayHeight));
-    System.out.println("GSTAR: " + gstar);
-    System.out.println("NSGX: " + nsgx);
-    System.out.println("HWPG: " + Arrays.toString(lbHighestWplaced));
-
     var ngstar = new ArrayList<Integer>();
-
-
     for (int ss = 0; ss < bayWidth; ++ss) {
       if (lbHighestWplaced[ss] < gstar) {
-        System.out.println("Potential " + ss);
         ngstar.add(0);
         if (!empty[ss]) {
           // iterate up stack ss until the current tier is overstowing
           for (int tt = 0;
                tt < bayHeight && state.getGroup(ss, tt) > Problem.EMPTY &&
-                   (tt == 0 || state.getGroup(ss, tt) <= state.getGroup(ss, tt - 1));
+               (tt == 0 || state.getGroup(ss, tt) <= state.getGroup(ss, tt - 1));
                tt++) {
-            if (state.getGroup(ss, tt) < gstar)
+            if (state.getGroup(ss, tt) < gstar) {
               ngstar.set(ngstar.size() - 1, ngstar.get(ngstar.size() - 1) + 1);
+            }
           }
         }
       }
     }
-    System.out.println(ngstar);
     Collections.sort(ngstar);
     for (int ii = 0; ii < nsgx; ++ii) {
-      System.out.println("Adding " + ngstar.get(ii));
       overstowage += ngstar.get(ii);
     }
     return overstowage;
