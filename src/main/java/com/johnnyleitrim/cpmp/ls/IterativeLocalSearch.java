@@ -13,6 +13,7 @@ import com.johnnyleitrim.cpmp.state.State;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategy;
 import com.johnnyleitrim.cpmp.utils.MoveUtils;
 import com.johnnyleitrim.cpmp.utils.StackUtils;
+import com.johnnyleitrim.cpmp.utils.StatsWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +21,11 @@ public class IterativeLocalSearch {
   private static final Logger LOGGER = LoggerFactory.getLogger(IterativeLocalSearch.class);
 
   private final IterativeLocalSearchStrategyConfig strategyConfig;
+  private final StatsWriter statsWriter;
 
-  public IterativeLocalSearch(IterativeLocalSearchStrategyConfig strategyConfig) {
+  public IterativeLocalSearch(IterativeLocalSearchStrategyConfig strategyConfig, StatsWriter statsWriter) {
     this.strategyConfig = strategyConfig;
+    this.statsWriter = statsWriter;
   }
 
   public Optional<List<Move>> search(State initialState, int maxSolutions) {
@@ -36,6 +39,7 @@ public class IterativeLocalSearch {
       int perturbationMoves = 0;
       State state = initialState;
       int acceptanceCriteria = 0;
+      long solutionStartTime = System.currentTimeMillis();
 
       int currentCost = calculateFitness(state);
 
@@ -68,7 +72,7 @@ public class IterativeLocalSearch {
         LOGGER.debug("Found solution in {} moves", moves.size());
         solutionCount++;
         moves = removeTransientMoves(moves, state.getNumberOfStacks());
-        printDuplicateStates(initialState, moves);
+        statsWriter.writeSolution(moves.size(), localSearchMoves, perturbationMoves, System.currentTimeMillis() - solutionStartTime);
         bestSolution = getBestSolution(bestSolution, moves);
       } else {
         LOGGER.debug("No solution found");
@@ -81,7 +85,7 @@ public class IterativeLocalSearch {
     int nMovesBeforeRemoval = moves.size();
     moves = MoveUtils.removeTransientMoves(moves, nStacks);
     if (moves.size() < nMovesBeforeRemoval) {
-      LOGGER.info("Removed {} transient moves", nMovesBeforeRemoval - moves.size());
+      LOGGER.debug("Removed {} transient moves", nMovesBeforeRemoval - moves.size());
     }
     return moves;
   }
@@ -95,7 +99,7 @@ public class IterativeLocalSearch {
       MoveUtils.applyMove(currentState, move.getSrcStack(), move.getDstStack());
       if (states.containsKey(currentState)) {
         int initialLocation = states.get(currentState);
-        LOGGER.warn("Found a duplicate state, distance is {}", i - initialLocation);
+        LOGGER.debug("Found a duplicate state, distance is {}", i - initialLocation);
       } else {
         states.put(currentState.copy(), i);
       }

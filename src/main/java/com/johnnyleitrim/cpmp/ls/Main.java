@@ -4,8 +4,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.johnnyleitrim.cpmp.CommandOptions;
 import com.johnnyleitrim.cpmp.MathUtil;
@@ -23,6 +21,7 @@ import com.johnnyleitrim.cpmp.strategy.StackClearingStrategies;
 import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategies;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategy;
+import com.johnnyleitrim.cpmp.utils.StatsFileWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,41 +72,43 @@ public class Main {
       System.exit(0);
     }
 
-    List<ProblemProvider> problemProviders = IntStream.range(bfStart, bfEnd + 1).mapToObj(BFProblemProvider::new).collect(Collectors.toList());
-    run(problemProviders, strategyConfig, runs, maxSolutions, baseSeed);
+    for (int bfNo = bfStart; bfNo <= bfEnd; bfNo++) {
+      run("BF" + bfNo, new BFProblemProvider(bfNo), strategyConfig, runs, maxSolutions, baseSeed);
+    }
   }
 
-  public static void run(List<ProblemProvider> problemProviders, IterativeLocalSearchStrategyConfig strategyConfig, int runs, int maxSolutions, long baseSeed) {
-    IterativeLocalSearch iterativeLocalSearch = new IterativeLocalSearch(strategyConfig);
-    for (ProblemProvider problemProvider : problemProviders) {
-      for (Problem problem : problemProvider.getProblems()) {
+  public static void run(String problemCategory, ProblemProvider problemProvider, IterativeLocalSearchStrategyConfig strategyConfig, int runs, int maxSolutions, long baseSeed) {
+    StatsFileWriter statsWriter = new StatsFileWriter(problemCategory, strategyConfig, runs, maxSolutions, baseSeed);
+    IterativeLocalSearch iterativeLocalSearch = new IterativeLocalSearch(strategyConfig, statsWriter);
+    for (Problem problem : problemProvider.getProblems()) {
 
-        LOGGER.info("==================================");
-        LOGGER.info(problem.getName());
-        LOGGER.info("==================================");
+      LOGGER.info("==================================");
+      LOGGER.info(problem.getName());
+      LOGGER.info("==================================");
+      statsWriter.writeProblemName(problem);
 
-        double[] nMoves = new double[runs];
-        for (int i = 0; i < runs; i++) {
-          LOGGER.info("RUN {}", i);
-          long randomSeed = baseSeed + (i * 10_000);
-          LOGGER.info("Setting random seed to: {}", randomSeed);
-          Random.setRandomSeed(randomSeed);
-          long startTime = System.currentTimeMillis();
-          Optional<List<Move>> moves = iterativeLocalSearch.search(problem.getInitialState(), maxSolutions);
-          long duration = System.currentTimeMillis() - startTime;
-          if (moves.isPresent()) {
-            LOGGER.info("Found solution in {} moves ", moves.get().size());
-            nMoves[i] = moves.get().size();
-          } else {
-            LOGGER.info("No solution found");
-          }
-          LOGGER.info("Runtime duration {}ms", duration);
+      double[] nMoves = new double[runs];
+      for (int i = 0; i < runs; i++) {
+        LOGGER.debug("RUN {}", i);
+        long randomSeed = baseSeed + (i * 10_000);
+        LOGGER.debug("Setting random seed to: {}", randomSeed);
+        Random.setRandomSeed(randomSeed);
+        statsWriter.writeSeed(randomSeed);
+        long startTime = System.currentTimeMillis();
+        Optional<List<Move>> moves = iterativeLocalSearch.search(problem.getInitialState(), maxSolutions);
+        long duration = System.currentTimeMillis() - startTime;
+        if (moves.isPresent()) {
+          LOGGER.debug("Found solution in {} moves ", moves.get().size());
+          nMoves[i] = moves.get().size();
+        } else {
+          LOGGER.debug("No solution found");
         }
-        MathUtil.Details details = MathUtil.calcDetails(nMoves);
-        LOGGER.info("Best: {}", details.getBest());
-        LOGGER.info("Mean: {}", details.getMean());
-        LOGGER.info(" Std: {}", details.getStdDev());
+        LOGGER.debug("Runtime duration {}ms", duration);
       }
+      MathUtil.Details details = MathUtil.calcDetails(nMoves);
+      LOGGER.info("Best: {}", details.getBest());
+      LOGGER.info("Mean: {}", details.getMean());
+      LOGGER.info(" Std: {}", details.getStdDev());
     }
   }
 

@@ -8,8 +8,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.johnnyleitrim.cpmp.problem.BFProblemProvider;
 import com.johnnyleitrim.cpmp.problem.ProblemProvider;
@@ -40,7 +38,6 @@ public class Experiments {
 
     int bfStart = 1;
     int bfEnd = 5;
-    List<ProblemProvider> problemProviders = IntStream.range(bfStart, bfEnd + 1).mapToObj(BFProblemProvider::new).collect(Collectors.toList());
 
     List<Future<Void>> experimentFutures = new LinkedList<>();
     for (ClearStackSelectionStrategy clearStackSelectionStrategy : ClearStackSelectionStrategies.ALL) {
@@ -59,8 +56,10 @@ public class Experiments {
               strategyConfig.setFillStackStrategy(stackFillingStrategy);
               strategyConfig.setClearStackStrategy(stackClearingStrategy);
 
-              Experiment experiment = new Experiment(problemProviders, strategyConfig, runs, maxSolutions, baseSeed);
-              experimentFutures.add(executorService.submit(experiment));
+              for (int bfNo = bfStart; bfNo <= bfEnd; bfNo++) {
+                Experiment experiment = new Experiment("BF" + bfNo, new BFProblemProvider(bfNo), strategyConfig, runs, maxSolutions, baseSeed);
+                experimentFutures.add(executorService.submit(experiment));
+              }
             }
           }
         }
@@ -77,14 +76,16 @@ public class Experiments {
   }
 
   private static class Experiment implements Callable<Void> {
-    private final List<ProblemProvider> problemProviders;
+    private final String problemCategory;
+    private final ProblemProvider problemProvider;
     private final IterativeLocalSearchStrategyConfig strategyConfig;
     private final int runs;
     private final int maxSolutions;
     private final long baseSeed;
 
-    private Experiment(List<ProblemProvider> problemProviders, IterativeLocalSearchStrategyConfig strategyConfig, int runs, int maxSolutions, long baseSeed) {
-      this.problemProviders = problemProviders;
+    private Experiment(String problemCategory, ProblemProvider problemProvider, IterativeLocalSearchStrategyConfig strategyConfig, int runs, int maxSolutions, long baseSeed) {
+      this.problemCategory = problemCategory;
+      this.problemProvider = problemProvider;
       this.strategyConfig = strategyConfig;
       this.runs = runs;
       this.maxSolutions = maxSolutions;
@@ -103,7 +104,7 @@ public class Experiments {
         LOGGER.info(":{}: {}", fieldName, fieldValue.getValue());
       }
       LOGGER.info("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
-      Main.run(problemProviders, strategyConfig, runs, maxSolutions, baseSeed);
+      Main.run(problemCategory, problemProvider, strategyConfig, runs, maxSolutions, baseSeed);
       return null;
     }
   }
