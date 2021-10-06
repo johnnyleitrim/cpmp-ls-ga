@@ -53,6 +53,8 @@ public class BestNeighbourTieBreakingStrategies {
     }
   };
 
+  public static final List<BestNeighbourTieBreakingStrategy> ALL = List.of(RANDOM, HIGHEST_LAST_CONTAINER, SMALLEST_CONTAINER_DIFFERENCE);
+
   private static abstract class Strategy extends BaseStrategy implements BestNeighbourTieBreakingStrategy {
     public Strategy(String name) {
       super(name);

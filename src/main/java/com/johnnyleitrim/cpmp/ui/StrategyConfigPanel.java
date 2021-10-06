@@ -7,20 +7,17 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import java.awt.GridLayout;
+import java.util.List;
+import java.util.Vector;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.johnnyleitrim.cpmp.ls.IterativeLocalSearchStrategyConfig;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategies;
-import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategy;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategies;
-import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategy;
 import com.johnnyleitrim.cpmp.strategy.FitnessStrategies;
-import com.johnnyleitrim.cpmp.strategy.FitnessStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackClearingStrategies;
-import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategies;
-import com.johnnyleitrim.cpmp.strategy.StackFillingStrategy;
 import com.johnnyleitrim.cpmp.strategy.Strategy;
 
 public class StrategyConfigPanel extends JPanel {
@@ -42,17 +39,11 @@ public class StrategyConfigPanel extends JPanel {
 
     addIntegerField(localSearchConfig, "Minimum search moves:", strategyConfig::getMinSearchMoves, strategyConfig::setMinSearchMoves);
     addIntegerField(localSearchConfig, "Maximum search moves:", strategyConfig::getMaxSearchMoves, strategyConfig::setMaxSearchMoves);
-
-    addStrategyField(localSearchConfig, "Neighbour Tie Breaking Strategy:", strategyConfig::getBestNeighbourTieBreakingStrategy, strategyConfig::setBestNeighbourTieBreakingStrategy, new BestNeighbourTieBreakingStrategy[]{
-        BestNeighbourTieBreakingStrategies.RANDOM,
-        BestNeighbourTieBreakingStrategies.HIGHEST_LAST_CONTAINER,
-        BestNeighbourTieBreakingStrategies.SMALLEST_CONTAINER_DIFFERENCE,
-    });
-
-    addStrategyField(localSearchConfig, "Fitness Strategy:", strategyConfig::getFitnessStrategy, strategyConfig::setFitnessStrategy, new FitnessStrategy[]{
+    addStrategyField(localSearchConfig, "Neighbour Tie Breaking Strategy:", strategyConfig::getBestNeighbourTieBreakingStrategy, strategyConfig::setBestNeighbourTieBreakingStrategy, BestNeighbourTieBreakingStrategies.ALL);
+    addStrategyField(localSearchConfig, "Fitness Strategy:", strategyConfig::getFitnessStrategy, strategyConfig::setFitnessStrategy, List.of(
         FitnessStrategies.ORIGINAL,
         FitnessStrategies.NEW
-    });
+    ));
 
     return localSearchConfig;
   }
@@ -62,23 +53,10 @@ public class StrategyConfigPanel extends JPanel {
     perturbationConfig.setBorder(BorderFactory.createTitledBorder("Perturbation"));
     perturbationConfig.setLayout(new GridLayout(4, 2, 10, 10));
 
-    addStrategyField(perturbationConfig, "Clear Stack Selection Strategy:", strategyConfig::getClearStackSelectionStrategy, strategyConfig::setClearStackSelectionStrategy, new ClearStackSelectionStrategy[]{
-        ClearStackSelectionStrategies.RANDOM_STACK,
-        ClearStackSelectionStrategies.LOWEST_STACK,
-        ClearStackSelectionStrategies.LOWEST_MIS_OVERLAID_STACK,
-    });
-
-    addStrategyField(perturbationConfig, "Stack Clearing Strategy:", strategyConfig::getClearStackStrategy, strategyConfig::setClearStackStrategy, new StackClearingStrategy[]{
-        StackClearingStrategies.RANDOM,
-        StackClearingStrategies.CLEAR_TO_BEST,
-    });
-
+    addStrategyField(perturbationConfig, "Clear Stack Selection Strategy:", strategyConfig::getClearStackSelectionStrategy, strategyConfig::setClearStackSelectionStrategy, ClearStackSelectionStrategies.ALL);
+    addStrategyField(perturbationConfig, "Stack Clearing Strategy:", strategyConfig::getClearStackStrategy, strategyConfig::setClearStackStrategy, StackClearingStrategies.ALL);
     addBooleanField(perturbationConfig, "Fill Stack after Clearing:", strategyConfig::isFillStackAfterClearing, strategyConfig::setFillStackAfterClearing);
-
-    addStrategyField(perturbationConfig, "Stack Filling Strategy:", strategyConfig::getFillStackStrategy, strategyConfig::setFillStackStrategy, new StackFillingStrategy[]{
-        StackFillingStrategies.LARGEST_CONTAINER,
-        StackFillingStrategies.LARGEST_MIS_OVERLAID_CONTAINER,
-    });
+    addStrategyField(perturbationConfig, "Stack Filling Strategy:", strategyConfig::getFillStackStrategy, strategyConfig::setFillStackStrategy, StackFillingStrategies.ALL);
 
     return perturbationConfig;
   }
@@ -108,9 +86,9 @@ public class StrategyConfigPanel extends JPanel {
     parent.add(enabledButton);
   }
 
-  private <T extends Strategy> void addStrategyField(JPanel parent, String fieldName, Supplier<Strategy> getter, Consumer<T> setter, T[] strategies) {
+  private <T extends Strategy> void addStrategyField(JPanel parent, String fieldName, Supplier<Strategy> getter, Consumer<T> setter, List<T> strategies) {
     JLabel fieldLabel = new JLabel(fieldName, SwingConstants.RIGHT);
-    JComboBox<T> fieldComboBox = new JComboBox<>(strategies);
+    JComboBox<T> fieldComboBox = new JComboBox<>(new Vector<>(strategies));
     fieldLabel.setLabelFor(fieldComboBox);
 
     fieldComboBox.setSelectedItem(getter.get());

@@ -1,6 +1,12 @@
 package com.johnnyleitrim.cpmp.ls;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategies;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategy;
@@ -19,7 +25,7 @@ public class IterativeLocalSearchStrategyConfig {
 
   private int maxSearchMoves = 2;
 
-  private FitnessStrategy fitnessStrategy = FitnessStrategies.ORIGINAL;
+  private FitnessStrategy fitnessStrategy = FitnessStrategies.NEW;
 
   private Duration maxSearchDuration = Duration.ofMinutes(1);
 
@@ -103,5 +109,37 @@ public class IterativeLocalSearchStrategyConfig {
 
   public void setClearStackStrategy(StackClearingStrategy clearStackStrategy) {
     this.clearStackStrategy = clearStackStrategy;
+  }
+
+  public Map<String, Object> getFieldValues() {
+    Set<String> ignoredProperties = Set.of("class", "fieldValues");
+    try {
+      Map<String, Object> fieldValues = new HashMap<>();
+      BeanInfo beanInfo = Introspector.getBeanInfo(IterativeLocalSearchStrategyConfig.class);
+      for (PropertyDescriptor propertyDescriptor : beanInfo.getPropertyDescriptors()) {
+        if (!ignoredProperties.contains(propertyDescriptor.getName())) {
+          String name = propertyDescriptor.getName();
+          Object value = propertyDescriptor.getReadMethod().invoke(this);
+          fieldValues.put(toDisplayName(name), value);
+        }
+      }
+      return fieldValues;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static String toDisplayName(String fieldName) {
+    StringBuilder displayName = new StringBuilder();
+    for (char ch : fieldName.toCharArray()) {
+      if (Character.isUpperCase(ch)) {
+        displayName.append(" ").append(ch);
+      } else if (displayName.length() == 0) {
+        displayName.append(Character.toUpperCase(ch));
+      } else {
+        displayName.append(ch);
+      }
+    }
+    return displayName.toString();
   }
 }

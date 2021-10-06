@@ -2,6 +2,7 @@ package com.johnnyleitrim.cpmp.ls;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -54,23 +55,18 @@ public class Main {
     int bfEnd = commandOptions.getIntArg("-bfEnd").orElse(1);
     int maxSolutions = commandOptions.getIntArg("-maxSolutions").orElse(-1);
 
-    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
-    LOGGER.info(":                   Base Seed: {}", baseSeed);
-    LOGGER.info(":                        Runs: {}", runs);
-    LOGGER.info(":           Start BF Category: {}", bfStart);
-    LOGGER.info(":             End BF Category: {}", bfEnd);
-    LOGGER.info(":           Maximum Solutions: {}", maxSolutions);
-    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
-    LOGGER.info(":            Min Search Moves: {}", strategyConfig.getMinSearchMoves());
-    LOGGER.info(":            Max Search Moves: {}", strategyConfig.getMaxSearchMoves());
-    LOGGER.info(":         Max Search Duration: {}", strategyConfig.getMaxSearchDuration());
-    LOGGER.info(": Best Neighbour Tie Breaking: {}", strategyConfig.getBestNeighbourTieBreakingStrategy().getName());
-    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
-    LOGGER.info(":       Clear Stack Selection: {}", strategyConfig.getClearStackSelectionStrategy().getName());
-    LOGGER.info(":        Clear Stack Strategy: {}", strategyConfig.getClearStackStrategy().getName());
-    LOGGER.info(":   Fill Stack After Clearing: {}", strategyConfig.isFillStackAfterClearing());
-    LOGGER.info(":         Fill Stack Strategy: {}", strategyConfig.getFillStackStrategy().getName());
-    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
+    LOGGER.info("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+    LOGGER.info(":                               Base Seed: {}", baseSeed);
+    LOGGER.info(":                                    Runs: {}", runs);
+    LOGGER.info(":                       Start BF Category: {}", bfStart);
+    LOGGER.info(":                         End BF Category: {}", bfEnd);
+    LOGGER.info(":                       Maximum Solutions: {}", maxSolutions);
+    LOGGER.info("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+    for (Map.Entry<String, Object> fieldValue : strategyConfig.getFieldValues().entrySet()) {
+      String fieldName = String.format("%40s", fieldValue.getKey());
+      LOGGER.info(":{}: {}", fieldName, fieldValue.getValue());
+    }
+    LOGGER.info("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
 
     if (!commandOptions.hasArg("-execute")) {
       LOGGER.info("Exiting...");
@@ -78,9 +74,11 @@ public class Main {
     }
 
     List<ProblemProvider> problemProviders = IntStream.range(bfStart, bfEnd + 1).mapToObj(BFProblemProvider::new).collect(Collectors.toList());
+    run(problemProviders, strategyConfig, runs, maxSolutions, baseSeed);
+  }
 
+  public static void run(List<ProblemProvider> problemProviders, IterativeLocalSearchStrategyConfig strategyConfig, int runs, int maxSolutions, long baseSeed) {
     IterativeLocalSearch iterativeLocalSearch = new IterativeLocalSearch(strategyConfig);
-
     for (ProblemProvider problemProvider : problemProviders) {
       for (Problem problem : problemProvider.getProblems()) {
 
