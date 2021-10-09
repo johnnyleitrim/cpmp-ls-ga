@@ -36,8 +36,8 @@ public class Experiments {
     int runs = 1;
     int maxSolutions = -1;
 
-    int bfStart = 1;
-    int bfEnd = 5;
+    int bfStart = 32;
+    int bfEnd = 32;
 
     List<Future<Void>> experimentFutures = new LinkedList<>();
     for (ClearStackSelectionStrategy clearStackSelectionStrategy : ClearStackSelectionStrategies.ALL) {
@@ -73,6 +73,8 @@ public class Experiments {
         LOGGER.error("Problem executing experiment", e);
       }
     }
+
+    executorService.shutdown();
   }
 
   private static class Experiment implements Callable<Void> {

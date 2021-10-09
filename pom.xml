@@ -78,6 +78,15 @@
               <mainClass>com.johnnyleitrim.cpmp.ui.CpmpApp</mainClass>
             </configuration>
           </execution>
+          <execution>
+            <id>experiments</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>com.johnnyleitrim.cpmp.ls.Experiments</mainClass>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

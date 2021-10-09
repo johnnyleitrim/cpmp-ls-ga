@@ -1,7 +1,6 @@
 package com.johnnyleitrim.cpmp.utils;
 
 import java.io.BufferedWriter;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,6 +46,7 @@ public class StatsFileWriter implements StatsWriter {
 
   @Override
   public void close() throws IOException {
+    writer.flush();
     writer.close();
   }
 
@@ -57,6 +57,7 @@ public class StatsFileWriter implements StatsWriter {
       filename.append("_");
       filename.append(fieldValue.getValue().toString());
     }
+    filename.append("_");
     filename.append(System.currentTimeMillis());
     filename.append(".log");
     return Paths.get("output", "ls", filename.toString());

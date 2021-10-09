@@ -67,9 +67,9 @@ public class IterativeLocalSearch {
           acceptanceCriteria++;
         }
       }
-      LOGGER.debug("Local search moves: {}, Perturbation moves: {}", localSearchMoves, perturbationMoves);
+      LOGGER.trace("Local search moves: {}, Perturbation moves: {}", localSearchMoves, perturbationMoves);
       if (currentCost == 0) {
-        LOGGER.debug("Found solution in {} moves", moves.size());
+        LOGGER.trace("Found solution in {} moves", moves.size());
         solutionCount++;
         moves = removeTransientMoves(moves, state.getNumberOfStacks());
         statsWriter.writeSolution(moves.size(), localSearchMoves, perturbationMoves, System.currentTimeMillis() - solutionStartTime);
@@ -83,9 +83,9 @@ public class IterativeLocalSearch {
 
   private List<Move> removeTransientMoves(List<Move> moves, int nStacks) {
     int nMovesBeforeRemoval = moves.size();
-    moves = MoveUtils.removeTransientMoves(moves, nStacks);
+//    moves = MoveUtils.removeTransientMoves(moves, nStacks);
     if (moves.size() < nMovesBeforeRemoval) {
-      LOGGER.debug("Removed {} transient moves", nMovesBeforeRemoval - moves.size());
+      LOGGER.trace("Removed {} transient moves", nMovesBeforeRemoval - moves.size());
     }
     return moves;
   }

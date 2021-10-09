@@ -1,5 +1,6 @@
 package com.johnnyleitrim.cpmp.ls;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class Main {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     IterativeLocalSearchStrategyConfig strategyConfig = new IterativeLocalSearchStrategyConfig();
 
     CommandOptions commandOptions = new CommandOptions(args);
@@ -77,38 +78,39 @@ public class Main {
     }
   }
 
-  public static void run(String problemCategory, ProblemProvider problemProvider, IterativeLocalSearchStrategyConfig strategyConfig, int runs, int maxSolutions, long baseSeed) {
-    StatsFileWriter statsWriter = new StatsFileWriter(problemCategory, strategyConfig, runs, maxSolutions, baseSeed);
-    IterativeLocalSearch iterativeLocalSearch = new IterativeLocalSearch(strategyConfig, statsWriter);
-    for (Problem problem : problemProvider.getProblems()) {
+  public static void run(String problemCategory, ProblemProvider problemProvider, IterativeLocalSearchStrategyConfig strategyConfig, int runs, int maxSolutions, long baseSeed) throws IOException {
+    try (StatsFileWriter statsWriter = new StatsFileWriter(problemCategory, strategyConfig, runs, maxSolutions, baseSeed)) {
+      IterativeLocalSearch iterativeLocalSearch = new IterativeLocalSearch(strategyConfig, statsWriter);
+      for (Problem problem : problemProvider.getProblems()) {
 
-      LOGGER.info("==================================");
-      LOGGER.info(problem.getName());
-      LOGGER.info("==================================");
-      statsWriter.writeProblemName(problem);
+        LOGGER.info("==================================");
+        LOGGER.info(problem.getName());
+        LOGGER.info("==================================");
+        statsWriter.writeProblemName(problem);
 
-      double[] nMoves = new double[runs];
-      for (int i = 0; i < runs; i++) {
-        LOGGER.debug("RUN {}", i);
-        long randomSeed = baseSeed + (i * 10_000);
-        LOGGER.debug("Setting random seed to: {}", randomSeed);
-        Random.setRandomSeed(randomSeed);
-        statsWriter.writeSeed(randomSeed);
-        long startTime = System.currentTimeMillis();
-        Optional<List<Move>> moves = iterativeLocalSearch.search(problem.getInitialState(), maxSolutions);
-        long duration = System.currentTimeMillis() - startTime;
-        if (moves.isPresent()) {
-          LOGGER.debug("Found solution in {} moves ", moves.get().size());
-          nMoves[i] = moves.get().size();
-        } else {
-          LOGGER.debug("No solution found");
+        double[] nMoves = new double[runs];
+        for (int i = 0; i < runs; i++) {
+          LOGGER.debug("RUN {}", i);
+          long randomSeed = baseSeed + (i * 10_000);
+          LOGGER.debug("Setting random seed to: {}", randomSeed);
+          Random.setRandomSeed(randomSeed);
+          statsWriter.writeSeed(randomSeed);
+          long startTime = System.currentTimeMillis();
+          Optional<List<Move>> moves = iterativeLocalSearch.search(problem.getInitialState(), maxSolutions);
+          long duration = System.currentTimeMillis() - startTime;
+          if (moves.isPresent()) {
+            LOGGER.debug("Found solution in {} moves ", moves.get().size());
+            nMoves[i] = moves.get().size();
+          } else {
+            LOGGER.debug("No solution found");
+          }
+          LOGGER.debug("Runtime duration {}ms", duration);
         }
-        LOGGER.debug("Runtime duration {}ms", duration);
+        MathUtil.Details details = MathUtil.calcDetails(nMoves);
+        LOGGER.info("Best: {}", details.getBest());
+        LOGGER.info("Mean: {}", details.getMean());
+        LOGGER.info(" Std: {}", details.getStdDev());
       }
-      MathUtil.Details details = MathUtil.calcDetails(nMoves);
-      LOGGER.info("Best: {}", details.getBest());
-      LOGGER.info("Mean: {}", details.getMean());
-      LOGGER.info(" Std: {}", details.getStdDev());
     }
   }
 
