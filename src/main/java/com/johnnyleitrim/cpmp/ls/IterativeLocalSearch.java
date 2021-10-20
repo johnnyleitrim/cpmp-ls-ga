@@ -10,10 +10,10 @@ import java.util.Optional;
 
 import com.johnnyleitrim.cpmp.state.MutableState;
 import com.johnnyleitrim.cpmp.state.State;
+import com.johnnyleitrim.cpmp.stats.StatsWriter;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategy;
 import com.johnnyleitrim.cpmp.utils.MoveUtils;
 import com.johnnyleitrim.cpmp.utils.StackUtils;
-import com.johnnyleitrim.cpmp.utils.StatsWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

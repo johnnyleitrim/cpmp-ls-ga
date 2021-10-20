@@ -1,4 +1,4 @@
-package com.johnnyleitrim.cpmp.utils;
+package com.johnnyleitrim.cpmp.stats;
 
 import java.io.Closeable;
 

@@ -33,11 +33,16 @@ public class Experiments {
     ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
 
     long baseSeed = System.currentTimeMillis();
-    int runs = 1;
-    int maxSolutions = -1;
+    int runs = 50;
+    int maxSolutions = 1;
 
-    int bfStart = 32;
-    int bfEnd = 32;
+    Map<String, ProblemProvider> problemProviders = Map.of(
+        "BF31", new BFProblemProvider(31),
+        "BF32", new BFProblemProvider(32)
+//        "CV5-5", new CVProblemProvider("data5-5"),
+//        "CV6-6", new CVProblemProvider("data6-6"),
+//        "CV6-10", new CVProblemProvider("data6-10")
+    );
 
     List<Future<Void>> experimentFutures = new LinkedList<>();
     for (ClearStackSelectionStrategy clearStackSelectionStrategy : ClearStackSelectionStrategies.ALL) {
@@ -49,15 +54,15 @@ public class Experiments {
               IterativeLocalSearchStrategyConfig strategyConfig = new IterativeLocalSearchStrategyConfig();
               strategyConfig.setMinSearchMoves(1);
               strategyConfig.setMaxSearchMoves(2);
-              strategyConfig.setMaxSearchDuration(Duration.ofMinutes(1));
+              strategyConfig.setMaxSearchDuration(Duration.ofSeconds(10));
               strategyConfig.setClearStackSelectionStrategy(clearStackSelectionStrategy);
               strategyConfig.setBestNeighbourTieBreakingStrategy(bestNeighbourTieBreakingStrategy);
               strategyConfig.setFillStackAfterClearing(fillStackAfterClearing);
               strategyConfig.setFillStackStrategy(stackFillingStrategy);
               strategyConfig.setClearStackStrategy(stackClearingStrategy);
 
-              for (int bfNo = bfStart; bfNo <= bfEnd; bfNo++) {
-                Experiment experiment = new Experiment("BF" + bfNo, new BFProblemProvider(bfNo), strategyConfig, runs, maxSolutions, baseSeed);
+              for (Map.Entry<String, ProblemProvider> problemProviderPair : problemProviders.entrySet()) {
+                Experiment experiment = new Experiment(problemProviderPair.getKey(), problemProviderPair.getValue(), strategyConfig, runs, maxSolutions, baseSeed);
                 experimentFutures.add(executorService.submit(experiment));
               }
             }

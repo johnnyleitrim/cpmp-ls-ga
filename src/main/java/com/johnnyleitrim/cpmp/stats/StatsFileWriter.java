@@ -1,4 +1,4 @@
-package com.johnnyleitrim.cpmp.utils;
+package com.johnnyleitrim.cpmp.stats;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -12,11 +12,12 @@ import com.johnnyleitrim.cpmp.ls.IterativeLocalSearchStrategyConfig;
 
 public class StatsFileWriter implements StatsWriter {
 
-  private static final String FILE_TAG = "F";
-  private static final String CONFIG_TAG = "C";
-  private static final String SOLUTION_TAG = "S";
-  private static final String SEED_TAG = "R";
-  private static final String NEW_LINE = System.lineSeparator();
+  public static final char FILE_TAG = 'F';
+  public static final char CONFIG_TAG = 'C';
+  public static final char SOLUTION_TAG = 'S';
+  public static final char SEED_TAG = 'R';
+  public static final String VALUE_DELIMITER = ",";
+  public static final String NEW_LINE = System.lineSeparator();
 
   private final BufferedWriter writer;
 
@@ -72,11 +73,11 @@ public class StatsFileWriter implements StatsWriter {
     }
   }
 
-  private void writeLine(String tag, String... values) {
+  private void writeLine(char tag, String... values) {
     try {
       writer.write(tag);
       writer.write(':');
-      writer.write(String.join(",", values));
+      writer.write(String.join(VALUE_DELIMITER, values));
       writer.write(NEW_LINE);
     } catch (IOException e) {
       throw new RuntimeException(e);

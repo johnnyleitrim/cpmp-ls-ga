@@ -12,6 +12,7 @@ import com.johnnyleitrim.cpmp.Problem;
 import com.johnnyleitrim.cpmp.Random;
 import com.johnnyleitrim.cpmp.problem.BFProblemProvider;
 import com.johnnyleitrim.cpmp.problem.ProblemProvider;
+import com.johnnyleitrim.cpmp.stats.StatsFileWriter;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategies;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategy;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategies;
@@ -22,7 +23,6 @@ import com.johnnyleitrim.cpmp.strategy.StackClearingStrategies;
 import com.johnnyleitrim.cpmp.strategy.StackClearingStrategy;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategies;
 import com.johnnyleitrim.cpmp.strategy.StackFillingStrategy;
-import com.johnnyleitrim.cpmp.utils.StatsFileWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
