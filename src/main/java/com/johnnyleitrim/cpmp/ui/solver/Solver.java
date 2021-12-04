@@ -1,6 +1,7 @@
 package com.johnnyleitrim.cpmp.ui.solver;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -26,9 +27,9 @@ public class Solver implements Callable<List<State>> {
   public List<State> call() {
     Optional<List<Move>> moves = iterativeLocalSearch.search(initialState, 1);
     MutableState state = initialState.copy();
-    List<State> problemStates = new ArrayList<>(moves.get().size() + 1);
+    List<State> problemStates = new ArrayList<>(moves.map(List::size).orElse(0) + 1);
     problemStates.add(state.copy());
-    for (Move move : moves.get()) {
+    for (Move move : moves.orElse(Collections.emptyList())) {
       MoveUtils.applyMove(state, move);
       problemStates.add(state.copy());
     }

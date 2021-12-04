@@ -34,6 +34,8 @@ public class ClearStackSelectionStrategies {
     }
   };
 
+  public static final List<ClearStackSelectionStrategy> ALL = List.of(RANDOM_STACK, LOWEST_STACK, LOWEST_MIS_OVERLAID_STACK);
+
   private static abstract class Strategy extends BaseStrategy implements ClearStackSelectionStrategy {
     public Strategy(String name) {
       super(name);

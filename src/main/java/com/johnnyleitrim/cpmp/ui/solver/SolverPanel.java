@@ -19,6 +19,7 @@ import com.johnnyleitrim.cpmp.fitness.BFLowerBoundFitness;
 import com.johnnyleitrim.cpmp.ls.IterativeLocalSearch;
 import com.johnnyleitrim.cpmp.ls.IterativeLocalSearchStrategyConfig;
 import com.johnnyleitrim.cpmp.state.State;
+import com.johnnyleitrim.cpmp.stats.StatsNullWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class SolverPanel extends JPanel {
     statePanel = new StatePanel(initialState);
     this.initialState = initialState;
 
-    iterativeLocalSearch = new IterativeLocalSearch(strategyConfig);
+    iterativeLocalSearch = new IterativeLocalSearch(strategyConfig, new StatsNullWriter());
 
     setLayout(new BorderLayout());
     add(statePanel, BorderLayout.CENTER);

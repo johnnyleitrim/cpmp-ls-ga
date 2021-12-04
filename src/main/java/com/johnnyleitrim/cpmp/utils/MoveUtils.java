@@ -60,7 +60,7 @@ public class MoveUtils {
 
   public static List<Move> removeTransientMoves(List<Move> moves, int nStacks) {
     List<Move> newMoves = new ArrayList<>(moves.size());
-    MoveInfo[] moveTurns = new MoveInfo[nStacks];
+    MoveInfo[] moveTurns = new MoveInfo[nStacks + 1];
     Arrays.fill(moveTurns, new MoveInfo(-1, false));
     for (Move move : moves) {
       int src = move.getSrcStack();
@@ -73,21 +73,24 @@ public class MoveUtils {
         for (int s = 0; s < nStacks; s++) {
           if (s != src && moveTurns[s].turn == previousMoveTurn.turn && !previousMoveTurn.src) {
             previousSrc = s;
+            break;
           }
         }
 
         if (previousSrc > -1 && moveTurns[dst].turn < previousMoveTurn.turn) {
           newMoves.set(previousMoveTurn.turn, new Move(previousSrc, dst));
+          src = previousSrc;
           keepMove = false;
         }
       }
 
-      int moveTurn = newMoves.size();
-      moveTurns[src] = new MoveInfo(moveTurn, true);
-      moveTurns[dst] = new MoveInfo(moveTurn, false);
+      int moveTurn = previousMoveTurn.turn;
       if (keepMove) {
+        moveTurn = newMoves.size();
         newMoves.add(move);
       }
+      moveTurns[src] = new MoveInfo(moveTurn, true);
+      moveTurns[dst] = new MoveInfo(moveTurn, false);
     }
     return newMoves;
   }

@@ -1,10 +1,10 @@
 package com.johnnyleitrim.cpmp.ls;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.johnnyleitrim.cpmp.CommandOptions;
 import com.johnnyleitrim.cpmp.MathUtil;
@@ -12,6 +12,7 @@ import com.johnnyleitrim.cpmp.Problem;
 import com.johnnyleitrim.cpmp.Random;
 import com.johnnyleitrim.cpmp.problem.BFProblemProvider;
 import com.johnnyleitrim.cpmp.problem.ProblemProvider;
+import com.johnnyleitrim.cpmp.stats.StatsFileWriter;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategies;
 import com.johnnyleitrim.cpmp.strategy.BestNeighbourTieBreakingStrategy;
 import com.johnnyleitrim.cpmp.strategy.ClearStackSelectionStrategies;
@@ -29,7 +30,7 @@ public class Main {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     IterativeLocalSearchStrategyConfig strategyConfig = new IterativeLocalSearchStrategyConfig();
 
     CommandOptions commandOptions = new CommandOptions(args);
@@ -54,56 +55,56 @@ public class Main {
     int bfEnd = commandOptions.getIntArg("-bfEnd").orElse(1);
     int maxSolutions = commandOptions.getIntArg("-maxSolutions").orElse(-1);
 
-    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
-    LOGGER.info(":                   Base Seed: {}", baseSeed);
-    LOGGER.info(":                        Runs: {}", runs);
-    LOGGER.info(":           Start BF Category: {}", bfStart);
-    LOGGER.info(":             End BF Category: {}", bfEnd);
-    LOGGER.info(":           Maximum Solutions: {}", maxSolutions);
-    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
-    LOGGER.info(":            Min Search Moves: {}", strategyConfig.getMinSearchMoves());
-    LOGGER.info(":            Max Search Moves: {}", strategyConfig.getMaxSearchMoves());
-    LOGGER.info(":         Max Search Duration: {}", strategyConfig.getMaxSearchDuration());
-    LOGGER.info(": Best Neighbour Tie Breaking: {}", strategyConfig.getBestNeighbourTieBreakingStrategy().getName());
-    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
-    LOGGER.info(":       Clear Stack Selection: {}", strategyConfig.getClearStackSelectionStrategy().getName());
-    LOGGER.info(":        Clear Stack Strategy: {}", strategyConfig.getClearStackStrategy().getName());
-    LOGGER.info(":   Fill Stack After Clearing: {}", strategyConfig.isFillStackAfterClearing());
-    LOGGER.info(":         Fill Stack Strategy: {}", strategyConfig.getFillStackStrategy().getName());
-    LOGGER.info(":::::::::::::::::::::::::::::::::::::");
+    LOGGER.info("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+    LOGGER.info(":                               Base Seed: {}", baseSeed);
+    LOGGER.info(":                                    Runs: {}", runs);
+    LOGGER.info(":                       Start BF Category: {}", bfStart);
+    LOGGER.info(":                         End BF Category: {}", bfEnd);
+    LOGGER.info(":                       Maximum Solutions: {}", maxSolutions);
+    LOGGER.info("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+    for (Map.Entry<String, Object> fieldValue : strategyConfig.getFieldValues().entrySet()) {
+      String fieldName = String.format("%40s", fieldValue.getKey());
+      LOGGER.info(":{}: {}", fieldName, fieldValue.getValue());
+    }
+    LOGGER.info("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
 
     if (!commandOptions.hasArg("-execute")) {
       LOGGER.info("Exiting...");
       System.exit(0);
     }
 
-    List<ProblemProvider> problemProviders = IntStream.range(bfStart, bfEnd + 1).mapToObj(BFProblemProvider::new).collect(Collectors.toList());
+    for (int bfNo = bfStart; bfNo <= bfEnd; bfNo++) {
+      run("BF" + bfNo, new BFProblemProvider(bfNo), strategyConfig, runs, maxSolutions, baseSeed);
+    }
+  }
 
-    IterativeLocalSearch iterativeLocalSearch = new IterativeLocalSearch(strategyConfig);
-
-    for (ProblemProvider problemProvider : problemProviders) {
+  public static void run(String problemCategory, ProblemProvider problemProvider, IterativeLocalSearchStrategyConfig strategyConfig, int runs, int maxSolutions, long baseSeed) throws IOException {
+    try (StatsFileWriter statsWriter = new StatsFileWriter(problemCategory, strategyConfig, runs, maxSolutions, baseSeed)) {
+      IterativeLocalSearch iterativeLocalSearch = new IterativeLocalSearch(strategyConfig, statsWriter);
       for (Problem problem : problemProvider.getProblems()) {
 
         LOGGER.info("==================================");
         LOGGER.info(problem.getName());
         LOGGER.info("==================================");
+        statsWriter.writeProblemName(problem);
 
         double[] nMoves = new double[runs];
         for (int i = 0; i < runs; i++) {
-          LOGGER.info("RUN {}", i);
+          LOGGER.debug("RUN {}", i);
           long randomSeed = baseSeed + (i * 10_000);
-          LOGGER.info("Setting random seed to: {}", randomSeed);
+          LOGGER.debug("Setting random seed to: {}", randomSeed);
           Random.setRandomSeed(randomSeed);
+          statsWriter.writeSeed(randomSeed);
           long startTime = System.currentTimeMillis();
           Optional<List<Move>> moves = iterativeLocalSearch.search(problem.getInitialState(), maxSolutions);
           long duration = System.currentTimeMillis() - startTime;
           if (moves.isPresent()) {
-            LOGGER.info("Found solution in {} moves ", moves.get().size());
+            LOGGER.debug("Found solution in {} moves ", moves.get().size());
             nMoves[i] = moves.get().size();
           } else {
-            LOGGER.info("No solution found");
+            LOGGER.debug("No solution found");
           }
-          LOGGER.info("Runtime duration {}ms", duration);
+          LOGGER.debug("Runtime duration {}ms", duration);
         }
         MathUtil.Details details = MathUtil.calcDetails(nMoves);
         LOGGER.info("Best: {}", details.getBest());

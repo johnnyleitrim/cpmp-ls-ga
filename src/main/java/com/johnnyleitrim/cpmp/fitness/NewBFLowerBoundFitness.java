@@ -111,7 +111,7 @@ public class NewBFLowerBoundFitness implements FitnessAlgorithm {
           // iterate up stack ss until the current tier is overstowing
           for (int tt = 0;
                tt < bayHeight && state.getGroup(ss, tt) > Problem.EMPTY &&
-               (tt == 0 || state.getGroup(ss, tt) <= state.getGroup(ss, tt - 1));
+                   (tt == 0 || state.getGroup(ss, tt) <= state.getGroup(ss, tt - 1));
                tt++) {
             if (state.getGroup(ss, tt) < gstar) {
               ngstar.set(ngstar.size() - 1, ngstar.get(ngstar.size() - 1) + 1);

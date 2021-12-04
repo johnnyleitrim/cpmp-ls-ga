@@ -1,5 +1,6 @@
 package com.johnnyleitrim.cpmp.strategy;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -11,6 +12,8 @@ public class StackFillingStrategies {
   public static final StackFillingStrategy LARGEST_CONTAINER = new Strategy("Largest container", false);
 
   public static final StackFillingStrategy LARGEST_MIS_OVERLAID_CONTAINER = new Strategy("Largest mis-overlaid container", true);
+
+  public static final List<StackFillingStrategy> ALL = List.of(LARGEST_CONTAINER, LARGEST_MIS_OVERLAID_CONTAINER);
 
   private static class Strategy extends BaseStrategy implements StackFillingStrategy {
 

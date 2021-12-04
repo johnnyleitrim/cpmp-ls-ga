@@ -36,6 +36,8 @@ public class StackClearingStrategies {
     }
   };
 
+  public static final List<StackClearingStrategy> ALL = List.of(RANDOM, CLEAR_TO_BEST);
+
   private static abstract class Strategy extends BaseStrategy implements StackClearingStrategy {
     public Strategy(String name) {
       super(name);

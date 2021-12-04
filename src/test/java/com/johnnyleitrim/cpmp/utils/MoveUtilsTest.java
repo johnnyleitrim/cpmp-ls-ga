@@ -37,12 +37,21 @@ public class MoveUtilsTest {
         new Move(4, 2)
     );
 
-    List<Move> newMoves = MoveUtils.removeTransientMoves(moves, 16);
+    List<Move> newMoves = MoveUtils.removeTransientMoves(moves, 5);
 
     assertThat(newMoves).containsExactly(
         new Move(1, 5),
-        new Move(3, 4),
-        new Move(4, 2)
+        new Move(3, 2)
+    );
+  }
+
+  @Test
+  public void itRemovesSequentialTransitiveMoves() {
+    List<Move> moves = MoveUtils.parseMoves("[1->2, 2->3, 3->4, 2->3]");
+    List<Move> newMoves = MoveUtils.removeTransientMoves(moves, 4);
+    assertThat(newMoves).containsExactly(
+        new Move(1, 4),
+        new Move(2, 3)
     );
   }
 

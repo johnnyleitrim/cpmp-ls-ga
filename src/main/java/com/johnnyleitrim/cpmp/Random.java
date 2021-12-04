@@ -4,18 +4,18 @@ import java.util.List;
 
 public class Random {
 
-  private static java.util.Random RANDOM = new java.util.Random();
+  private static ThreadLocal<java.util.Random> RANDOM = ThreadLocal.withInitial(java.util.Random::new);
 
   public static void setRandom(java.util.Random random) {
-    Random.RANDOM = random;
+    Random.RANDOM = ThreadLocal.withInitial(() -> random);
   }
 
   public static void setRandomSeed(long seed) {
-    Random.RANDOM = new java.util.Random(seed);
+    RANDOM.get().setSeed(seed);
   }
 
   public static int getRandomIndex(int bounds) {
-    return RANDOM.nextInt(bounds);
+    return RANDOM.get().nextInt(bounds);
   }
 
   public static <T> int getRandomIndex(List<T> items) {
