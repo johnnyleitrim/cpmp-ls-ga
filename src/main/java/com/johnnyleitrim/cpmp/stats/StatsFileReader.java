@@ -15,7 +15,9 @@ public class StatsFileReader {
       switch (tag) {
         case StatsFileWriter.CONFIG_TAG:
           assert values.length == 2;
-          problemStats.addConfig(values[0], values[1]);
+          if (!values[0].equals("Base Seed")) {
+            problemStats.addConfig(values[0], values[1]);
+          }
           break;
         case StatsFileWriter.SEED_TAG:
           break;

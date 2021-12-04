@@ -1,6 +1,7 @@
 package com.johnnyleitrim.cpmp.ls;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +37,10 @@ public class Experiments {
     int runs = 50;
     int maxSolutions = 1;
 
-    Map<String, ProblemProvider> problemProviders = Map.of(
-        "BF31", new BFProblemProvider(31),
-        "BF32", new BFProblemProvider(32)
-//        "CV5-5", new CVProblemProvider("data5-5"),
-//        "CV6-6", new CVProblemProvider("data6-6"),
-//        "CV6-10", new CVProblemProvider("data6-10")
-    );
+    Map<String, ProblemProvider> problemProviders = new HashMap<>();
+    for (int bfNo : new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30}) {
+      problemProviders.put("BF" + bfNo, new BFProblemProvider(bfNo));
+    }
 
     List<Future<Void>> experimentFutures = new LinkedList<>();
     for (ClearStackSelectionStrategy clearStackSelectionStrategy : ClearStackSelectionStrategies.ALL) {

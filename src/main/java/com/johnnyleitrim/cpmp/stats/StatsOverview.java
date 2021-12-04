@@ -25,16 +25,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StatsOverview {
-  private static final Logger LOGGER = LoggerFactory.getLogger(StatsOverview.class);
-  private static final int MAX_SOLUTIONS = 100;
-
-  private static final Map<String, String> BASELINE_CONFIG = Map.of(
+  public static final Map<String, String> BASELINE_CONFIG = Map.of(
       "Fill Stack After Clearing", "false",
       "Clear Stack Strategy", "Random",
       "Fill Stack Strategy", "Largest container",
       "Best Neighbour Tie Breaking Strategy", "Random",
       "Clear Stack Selection Strategy", "Random"
   );
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(StatsOverview.class);
+  private static final int MAX_SOLUTIONS = 100;
 
   public static void main(String[] args) throws IOException {
     List<ProblemStats> allProblemStats = new ArrayList<>();
